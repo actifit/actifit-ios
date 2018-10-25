@@ -25,7 +25,7 @@ struct Messages {
     static let fetching_leaderboard = "Updating the leaderboard..."
     static let leader_no_results = "There are no users on the leaderboard now"
     static let leader_error = "An error occurred trying to fetch leaderboard list. Please Try again later."
-    static let username_missing = "Please provide a proper existing steemit username"
+    static let username_missing = "Please provide a proper existing steem username"
     static let fetching_user_balance = "Grabbing user balance..."
     static let metric_system = "Metric System"
     static let us_system = "US System"
