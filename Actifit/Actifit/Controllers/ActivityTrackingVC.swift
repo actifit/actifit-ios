@@ -22,7 +22,10 @@ class ActivityTrackingVC: UIViewController {
     @IBOutlet weak var viewDailyLeaderboardBtn : UIButton!
     @IBOutlet weak var viewWalletBtn : UIButton!
     @IBOutlet weak var settingsBtn : UIButton!
-    
+    @IBOutlet weak var dateLabel : UILabel!
+    @IBOutlet weak var usernameLabel : UILabel!
+    @IBOutlet weak var rankLabel : UILabel!
+
     //MARK: INSTANCE VARIABLES
     
     let activityManager = CMMotionActivityManager()
@@ -54,10 +57,14 @@ class ActivityTrackingVC: UIViewController {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(appMovedToBackground), name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
         notificationCenter.addObserver(self, selector: #selector(appMovedToForeground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
+        
+        getUSerRank()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+      
+        setTodayDate()
         self.navigationController?.isNavigationBarHidden = true
         self.checkAuthorizationStatusAndStartTracking()
     }
@@ -108,6 +115,13 @@ class ActivityTrackingVC: UIViewController {
     
     //MARK: HELPERS
     
+    func setTodayDate() {
+        let dateFormatter = DateFormatter.init()
+        dateFormatter.dateFormat = "EEEE, MMM d, yyyy"
+        let todayDateStr = dateFormatter.string(from: Date())
+        self.dateLabel.text  = todayDateStr
+    }
+    
     @objc func appMovedToBackground() {
         self.timer?.invalidate()
     }
@@ -153,6 +167,35 @@ class ActivityTrackingVC: UIViewController {
                     self?.saveCurrentStepsCounts(steps: totalSteps, midnightStartDate: AppDelegate.todayStartDate())
                     NotificationCenter.default.post(name: Notification.Name.init(StepsUpdatedNotification), object: nil, userInfo: ["steps" : totalSteps])
                 }
+            }
+        }
+    }
+    
+    //MARK: WEB SERVICES
+    
+    func getUSerRank() {
+        if let user = User.current() {
+            let username = user.steemit_username
+            APIMaster.getUserRank(username : username,completion: { [weak self] (json) in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                    if let jsonString = json as? String {
+                        if let data = jsonString.data(using: .utf8) {
+                            do {
+                                if let jsonDict = try JSONSerialization.jsonObject(with: data, options : .allowFragments) as? [String :Any] {
+                                    if let user_rank = jsonDict["user_rank"] as? Double {
+                                        self?.usernameLabel.text = "@\(username)"
+                                        self?.rankLabel.text = "\(user_rank)"
+                                    }
+                                } else {
+                                    print("bad json")
+                                }
+                            } catch let error as NSError {
+                                print(error)
+                            }
+                        }
+                    }
+                })
+            }) { (error) in
             }
         }
     }
@@ -239,7 +282,17 @@ extension ActivityTrackingVC {
             let activtyInfo = [ActivityKeys.id : activity.id, ActivityKeys.date : activity.date, ActivityKeys.steps : steps] as [String : Any]
             activity.upadteWith(info: activtyInfo)
         } else {
-            let activtyInfo = [ActivityKeys.id : allActivities.count + 1, ActivityKeys.date : midnightStartDate, ActivityKeys.steps : steps] as [String : Any]
+            var activityId = allActivities.count + 1
+            if allActivities.count > 0 {
+                let sortedActivities = allActivities.sorted { (a1, a2) -> Bool in
+                    return a1.date > a2.date
+                }
+                if let lastSavedActivityId = sortedActivities.first?.id {
+                    activityId = lastSavedActivityId + 1
+                }
+            }
+            let activtyInfo = [ActivityKeys.id :activityId , ActivityKeys.date : midnightStartDate, ActivityKeys.steps : steps] as [String : Any]
+
             Activity.saveWith(info: activtyInfo)
         }
     }

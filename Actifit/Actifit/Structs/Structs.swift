@@ -110,6 +110,7 @@ struct PostKeys {
     static let thighsUnit = "thighsUnit"
     static let appType = "appType"
     static let appVersion = "appVersion"
+    static let full_afit_pay = "full_afit_pay"
     static let charity = "charity"
 }
 
@@ -147,5 +148,6 @@ struct HttpMethods  {
 
 //API URLS
 struct ApiUrls {
+   
 }
 
