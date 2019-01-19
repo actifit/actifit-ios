@@ -2,10 +2,16 @@ platform :ios, '9.0'
 use_frameworks!
 
 target 'Actifit' do
-pod 'RealmSwift', '3.0'
+pod 'RealmSwift'
 pod 'IQKeyboardManagerSwift'
 pod 'EFCountingLabel', '~> 4.0'
-
+pod 'EFCountingLabel', '~> 4.0'
+pod 'AWSCore', '~> 2.8.0'
+pod 'AWSS3', '~> 2.8.0'
+pod 'AWSMobileClient', '~> 2.8.0'
+pod 'SnapKit', '~> 4.0.0'
+pod 'EFMarkdown'
+pod 'Charts'
 end
 
 

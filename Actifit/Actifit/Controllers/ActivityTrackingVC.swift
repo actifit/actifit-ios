@@ -9,10 +9,10 @@
 import UIKit
 import CoreMotion
 import EFCountingLabel
-
+import AVFoundation
 let StepsUpdatedNotification = "StepsUpdatedNotification"
 
-class ActivityTrackingVC: UIViewController {
+class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINavigationControllerDelegate {
     
     //MARK: OUTLETS
     
@@ -30,6 +30,7 @@ class ActivityTrackingVC: UIViewController {
     
     var startDate = Date()
     var timer : Timer?
+    let album = ActifitAlbum()
     
     //MARK: View Life Cycle
     
@@ -85,6 +86,9 @@ class ActivityTrackingVC: UIViewController {
         } else {
             self.showAlertWith(title: nil, message: Messages.one_post_per_day_error)
         }
+    }
+    @IBAction func snapPicBtnAction(_ sender: Any) {
+        checkCameraAuthorizationStatus()
     }
     
     @IBAction func viewTrackingHistoryBtnAction(_ sender : UIButton) {
@@ -190,6 +194,26 @@ extension ActivityTrackingVC {
     }
     
     //check for activity authorization Status
+    
+    private func checkCameraAuthorizationStatus() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized: // The user has previously granted access to the camera.
+            self.takePicture()
+            
+        case .notDetermined: // The user has not yet been asked for camera access.
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                if granted {
+                    self.takePicture()
+                }
+            }
+            
+        case .denied: // The user has previously denied access.
+            self.showAlertWith(title: "Alert", message: "Please enable the camera usage under settings")
+        case .restricted: // The user can't grant access due to restrictions.
+            self.showAlertWith(title: "Alert", message: "Please enable the camera usage under settings")
+        }
+    }
+    
     private func checkAuthorizationStatus() {
         if #available(iOS 11.0, *) {
             switch CMMotionActivityManager.authorizationStatus() {
@@ -289,6 +313,22 @@ extension ActivityTrackingVC {
             return "Total Activity Today: " + (formatter.string(from: NSNumber(value: Int(value))) ?? "")
         }
     }
+    
+    // funtion to open the camera for taking picture
+    func takePicture(){
+        let imagePicker =  UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.sourceType = .camera
+        present(imagePicker, animated: true, completion: nil)
+    }
+    // MARK: Delegates
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        picker.dismiss(animated: true, completion: nil)
+        let image = info[UIImagePickerControllerOriginalImage] as? UIImage
+        album.save(image: image!)
+    }
+    
+    
 }
 
 
