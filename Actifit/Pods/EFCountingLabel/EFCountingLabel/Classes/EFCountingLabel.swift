@@ -134,8 +134,8 @@ open class EFCountingLabel: UILabel {
         } else {
             timer.frameInterval = 2
         }
-        timer.add(to: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
-        timer.add(to: RunLoop.main, forMode: RunLoopMode.UITrackingRunLoopMode)
+        timer.add(to: RunLoop.main, forMode:RunLoop.Mode.defaultRunLoopMode)
+        timer.add(to: RunLoop.main, forMode:RunLoop.Mode.UITrackingRunLoopMode)
         self.timer = timer
     }
 

@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import AWSS3
+import AWSMobileClient
+import SnapKit
 
-class PostToSteemitVC: UIViewController {
+class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     
     @IBOutlet weak var backBtn : UIButton!
     @IBOutlet weak var steemitUsernameTextField : AFTextField!
@@ -37,6 +40,10 @@ class PostToSteemitVC: UIViewController {
     @IBOutlet weak var waistUnitLabel  : UILabel!
     @IBOutlet weak var thighsUnitLabel  : UILabel!
     @IBOutlet weak var chestUnitLabel  : UILabel!
+    @IBOutlet weak var markDownEditorHeight: NSLayoutConstraint!
+    @IBOutlet weak var markDOwnView: UIView!
+    
+    var reportView: ReportPreView!
     
     lazy var currentUser = {
         return User.current()
@@ -47,7 +54,6 @@ class PostToSteemitVC: UIViewController {
     }()
     
     var defaultPostTitle = ""
-    
     //MARK: VIEW LIFE CYCLE
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -57,6 +63,7 @@ class PostToSteemitVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        AWSMobileClient.initialize()
         self.activityTypeLabel.text = ""
         self.defaultPostTitle = "\(Messages.default_post_title)\(todayDateStringWithFormat(format: "MMMM d yyyy"))"
         //show today activity steps count
@@ -69,22 +76,90 @@ class PostToSteemitVC: UIViewController {
             self.steemitUsernameTextField.text = currentUser.steemit_username
             self.steemitPostingPrivateKeyTextField.text = currentUser.private_posting_key
         }
-     
+        
         self.applyFinishingTouchToUIElements()
         
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(appMovedToForeground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.toDayStepsUpdated(notification:)), name: NSNotification.Name.init(StepsUpdatedNotification), object: nil)
+        setUpMarkDownView()
     }
     
+    func setUpMarkDownView() {
+        markDownEditorHeight.constant = 50
+        updateViewConstraints()
+        reportView =  ReportPreView()
+        markDOwnView.addSubview(reportView)
+        reportView.snp.makeConstraints { (make) in
+            make.top.equalToSuperview()
+            make.width.equalToSuperview()
+            make.height.equalToSuperview()
+        }
+    }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         let notificationCenter = NotificationCenter.default
         notificationCenter.removeObserver(self, name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
         notificationCenter.removeObserver(self, name: NSNotification.Name.init(StepsUpdatedNotification), object: nil)
-
+        
     }
     
+    func uploadData(image:UIImage) {
+        
+        let data: Data =  UIImageJPEGRepresentation(image, 1)! //Data() //UIImageJPEGRepresentation(image, 1)!
+        let deviceUUID: String = (UIDevice.current.identifierForVendor?.uuidString)!
+        let filename = deviceUUID + String(Date().ticks)
+        print("file -\(filename)")
+        
+        let expression = AWSS3TransferUtilityMultiPartUploadExpression()
+        expression.progressBlock = {(task, progress) in
+            print(progress)
+            DispatchQueue.main.async(execute: {
+                print(progress)
+            })
+        }
+        
+        var completionHandler: AWSS3TransferUtilityMultiPartUploadCompletionHandlerBlock
+        completionHandler = { (task, error) -> Void in
+            DispatchQueue.main.async(execute: {
+                print(task)
+                print("![](https://usermedia.actifit.io/\(filename))")
+                self.postContentTextView.text = self.postContentTextView.text + " ![](https://usermedia.actifit.io/\(filename))"
+                self.updateMarkDownView()
+            })
+        }
+        
+        let transferUtility = AWSS3TransferUtility.default()
+        transferUtility.uploadUsingMultiPart(data:data,
+                                             bucket: "actifit",
+                                             key:filename,
+                                             contentType: "image/jpeg",
+                                             expression: expression,
+                                             completionHandler: completionHandler).continueWith {
+                                                (task) -> AnyObject! in
+                                                if let error = task.error {
+                                                    print("Error: \(error.localizedDescription)")
+                                                }
+                                                
+                                                if let _ = task.result {
+                                                    print(task.result?.status)
+                                                    
+                                                }
+                                                return nil;
+        }
+    }
+    
+    func updateMarkDownView(){
+        reportView.markView.load(markdown: postContentTextView.text)
+        reportView.markView.onRendered = {
+            [weak self] (height) in
+            if let _ = self {
+                print("onRendered height: \(height ?? 0)")
+                self!.markDownEditorHeight.constant = height ?? 0
+                self!.updateViewConstraints()
+            }
+        }
+    }
     //MARK: INTERFACE BUILDER ACTIONS
     
     @IBAction func backBtnAction(_ sender : UIButton) {
@@ -122,6 +197,13 @@ class PostToSteemitVC: UIViewController {
         }
     }
     
+    @IBAction func chooseFileBtnAction(_ sender: Any) {
+        let imagePicker =  UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.sourceType = .photoLibrary
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
     @IBAction func postToSteemitBtnAction(_ sender : UIButton) {
         //save user steemit credentials privately in local database
         self.saveOrUpdateUserCredentials()
@@ -130,9 +212,9 @@ class PostToSteemitVC: UIViewController {
         var isDonatingToCharity = false
         var charityDisplayName = ""
         var charityName = ""
-
+        
         var activityJson = [String : Any]()
-
+        
         if let settings = self.settings {
             //send charity_name if is donating to charity and charity name is not empty
             if settings.isDonatingCharity {
@@ -233,7 +315,7 @@ class PostToSteemitVC: UIViewController {
     
     func showMeasurementUnits() {
         var measurementSystem = MeasurementSystem.metric.rawValue
-         if let settings = self.settings {
+        if let settings = self.settings {
             measurementSystem = settings.measurementSystem
         }
         self.weightUnitLabel.text = measurementSystem == MeasurementSystem.metric.rawValue ? MeasurementUnit.metric.kg : MeasurementUnit.us.lb
@@ -350,6 +432,19 @@ class PostToSteemitVC: UIViewController {
     
 }
 
+extension Date {
+    var ticks: UInt64 {
+        return UInt64((self.timeIntervalSince1970 + 62_135_596_800) * 10_000_000)
+    }
+}
+// MARK: UIImagePickerControllerDelegate
+extension PostToSteemitVC : UIImagePickerControllerDelegate{
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        picker.dismiss(animated: true, completion: nil)
+        let image = info[UIImagePickerControllerOriginalImage] as? UIImage
+        uploadData(image: image!)
+    }
+}
 extension PostToSteemitVC : UITextViewDelegate {
     
     //MARK: UITextViewDelegate
@@ -366,6 +461,10 @@ extension PostToSteemitVC : UITextViewDelegate {
         }
     }
     
+    func textViewDidChange(_ textView: UITextView) {
+        updateMarkDownView()
+    }
+    
     func textViewDidEndEditing(_ textView: UITextView) {
         if let afTextView = (textView as? AFTextView) {
             if afTextView.isEqual(self.postTitleTextView) {
@@ -375,6 +474,7 @@ extension PostToSteemitVC : UITextViewDelegate {
             } else if afTextView.isEqual(self.postContentTextView) {
                 self.postContentTextViewLineLabel.backgroundColor = UIColor.lightGray
             }
+            updateMarkDownView()
         }
     }
 }
