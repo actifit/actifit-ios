@@ -147,5 +147,9 @@ struct HttpMethods  {
 
 //API URLS
 struct ApiUrls {
+    static let postActivity = ""
+    static let getDailyLeaderboard = ""
+    static let walletBalance = ""
+    static let transactions = ""
+    static let charities = ""
 }
-
