@@ -19,6 +19,26 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
 
         //Enabling IBKeyboardManager to handle keyboard for textfields and textviews
         IQKeyboardManager.shared.enable = true
+        application.registerUserNotificationSettings(UIUserNotificationSettings(types: UIUserNotificationType(rawValue: UIUserNotificationType.sound.rawValue | UIUserNotificationType.badge.rawValue | UIUserNotificationType.alert.rawValue), categories: nil))
+        UIApplication.shared.applicationIconBadgeNumber = 0
+
+        let config = Realm.Configuration(
+            schemaVersion: 5,
+            migrationBlock: { migration, oldSchemaVersion in
+                if (oldSchemaVersion < 4) {
+                    migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
+                        newObject!["isDeviceSensorSystemSelected"] = true
+                        newObject!["isSbdSPPaySystemSelected"] = true
+                        newObject!["isReminderSelected"] = false                    
+                    }
+                }
+        })
+        Realm.Configuration.defaultConfiguration = config
+        do {
+            let realm =  try Realm()
+        } catch {
+            
+        }
         return true
     }
 
@@ -50,13 +70,19 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         var config = Realm.Configuration.defaultConfiguration
         config.schemaVersion = CurrentRealmSchemaVersion
         config.migrationBlock = { (migration, oldSchemaVersion) in
-            // nothing to do
+            if (oldSchemaVersion < 4) {
+                migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
+                    newObject!["isDeviceSensorSystemSelected"] = true
+                    newObject!["isSbdSPPaySystemSelected"] = true
+                    newObject!["isReminderSelected"] = false
+                }
+            }
         }
         do {
             let realm =  try Realm.init(configuration: config)
             return realm
         } catch {
-            
+            print("error")
         }
         return nil
     }

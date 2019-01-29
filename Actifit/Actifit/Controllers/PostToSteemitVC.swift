@@ -63,7 +63,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //        AWSMobileClient.initialize()
+        AWSMobileClient.initialize()
         self.activityTypeLabel.text = ""
         self.defaultPostTitle = "\(Messages.default_post_title)\(todayDateStringWithFormat(format: "MMMM d yyyy"))"
         //show today activity steps count
@@ -105,7 +105,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     }
     
     func uploadData(image:UIImage) {
-        
+        ActifitLoader.show(title: "Uploading", animated: true)
         let data: Data =  UIImageJPEGRepresentation(image, 1)! //Data() //UIImageJPEGRepresentation(image, 1)!
         let deviceUUID: String = (UIDevice.current.identifierForVendor?.uuidString)!
         let filename = deviceUUID + String(Date().ticks)
@@ -126,6 +126,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
                 print("![](https://usermedia.actifit.io/\(filename))")
                 self.postContentTextView.text = self.postContentTextView.text + " ![](https://usermedia.actifit.io/\(filename))"
                 self.updateMarkDownView()
+                    ActifitLoader.hide()
             })
         }
         

@@ -306,12 +306,12 @@ extension ActivityTrackingVC {
         // stepsCountLabel.countFrom(stepsCountLabel.currentValue(), to: CGFloat(count), withDuration: 3.0)
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        
-        self.stepsCountLabel.countFrom(self.stepsCountLabel.currentValue(), to: CGFloat(count), withDuration: 2.0)
-        self.stepsCountLabel.formatBlock = {
-            (value) in
-            return "Total Activity Today: " + (formatter.string(from: NSNumber(value: Int(value))) ?? "")
-        }
+        self.stepsCountLabel.text = "Total Activity Today: " + (formatter.string(from: NSNumber(value: Int(count))) ?? "")
+//        self.stepsCountLabel.countFrom(self.stepsCountLabel.currentValue(), to: CGFloat(count), withDuration: 2.0)
+//        self.stepsCountLabel.formatBlock = {
+//            (value) in
+//            return "Total Activity Today: " + (formatter.string(from: NSNumber(value: Int(value))) ?? "")
+//        }
     }
     
     // funtion to open the camera for taking picture
