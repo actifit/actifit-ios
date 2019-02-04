@@ -21,6 +21,7 @@ class Settings: Object {
     @objc dynamic var measurementSystem: MeasurementSystem.RawValue = MeasurementSystem.metric.rawValue
     @objc dynamic var isDonatingCharity: Bool = false
     @objc dynamic var isDeviceSensorSystemSelected: Bool = true
+    @objc dynamic var fitBitMeasurement: Bool = false
     @objc dynamic var isSbdSPPaySystemSelected: Bool = true
     @objc dynamic var isReminderSelected: Bool = false
     @objc dynamic var charityName: String = ""
@@ -69,7 +70,7 @@ class Settings: Object {
     }
     
     //update the activity(steps count)
-    func update(measurementSystem :MeasurementSystem, isDonatingCharity : Bool, charityName : String, charityDisplayName : String,isDeviceSensorSystemSelected: Bool,isSbdSPPaySystemSelected: Bool, isReminderSelected: Bool ) {
+    func update(measurementSystem :MeasurementSystem, isDonatingCharity : Bool, charityName : String, charityDisplayName : String,isDeviceSensorSystemSelected: Bool,isSbdSPPaySystemSelected: Bool, isReminderSelected: Bool,  fitBitMeasurement: Bool) {
         autoreleasepool {
             if let realm = AppDelegate.defaultRealm() {
                 realm.beginWrite()
@@ -80,6 +81,7 @@ class Settings: Object {
                 self.isReminderSelected = isReminderSelected
                 self.isSbdSPPaySystemSelected = isSbdSPPaySystemSelected
                 self.isDeviceSensorSystemSelected = isDeviceSensorSystemSelected
+                self.fitBitMeasurement = fitBitMeasurement
                 try! realm.commitWrite()
             }
         }

@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		162F962F2205DB4E008227EF /* AuthenticationControllerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162F962E2205DB4E008227EF /* AuthenticationControllerViewController.swift */; };
+		162F96312205E080008227EF /* FitbitAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162F96302205E080008227EF /* FitbitAPI.swift */; };
+		162F96332205EA7A008227EF /* StepStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162F96322205EA7A008227EF /* StepStat.swift */; };
 		163EF95F21F8E15D00E52B5C /* DayAxisValueFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 163EF95E21F8E15D00E52B5C /* DayAxisValueFormatter.swift */; };
-		163EF96621F8FE2400E52B5C /* SettingVer2VC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 163EF96521F8FE2400E52B5C /* SettingVer2VC.swift */; };
 		166EEA7621F3D9CB00ECF8F9 /* ActifitAlbum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166EEA7521F3D9CB00ECF8F9 /* ActifitAlbum.swift */; };
 		166EEA7821F3D9FD00ECF8F9 /* ReportPreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166EEA7721F3D9FD00ECF8F9 /* ReportPreView.swift */; };
 		166EEA7A21F3DE7000ECF8F9 /* awsconfiguration.json in Resources */ = {isa = PBXBuildFile; fileRef = 166EEA7921F3DE7000ECF8F9 /* awsconfiguration.json */; };
@@ -56,9 +58,11 @@
 
 /* Begin PBXFileReference section */
 		0FDABFA1F3E07474B668EE1A /* Pods_Actifit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Actifit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		162F962E2205DB4E008227EF /* AuthenticationControllerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationControllerViewController.swift; sourceTree = "<group>"; };
+		162F96302205E080008227EF /* FitbitAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitbitAPI.swift; sourceTree = "<group>"; };
+		162F96322205EA7A008227EF /* StepStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepStat.swift; sourceTree = "<group>"; };
 		163EF95E21F8E15D00E52B5C /* DayAxisValueFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DayAxisValueFormatter.swift; sourceTree = "<group>"; };
 		163EF96021F8E45A00E52B5C /* Charts.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Charts.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		163EF96521F8FE2400E52B5C /* SettingVer2VC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingVer2VC.swift; sourceTree = "<group>"; };
 		166EEA7521F3D9CB00ECF8F9 /* ActifitAlbum.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActifitAlbum.swift; sourceTree = "<group>"; };
 		166EEA7721F3D9FD00ECF8F9 /* ReportPreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReportPreView.swift; sourceTree = "<group>"; };
 		166EEA7921F3DE7000ECF8F9 /* awsconfiguration.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = awsconfiguration.json; sourceTree = "<group>"; };
@@ -171,7 +175,7 @@
 				BE925D952127399800C87803 /* WalletVC.swift */,
 				BE3D8FDF212B3B9A00178152 /* SettingsVC.swift */,
 				16B1FFC721F7C5FB00CD8234 /* HistoryChartVC.swift */,
-				163EF96521F8FE2400E52B5C /* SettingVer2VC.swift */,
+				162F962E2205DB4E008227EF /* AuthenticationControllerViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -229,6 +233,8 @@
 			isa = PBXGroup;
 			children = (
 				BE222CFF2123A14300AD025F /* API.swift */,
+				162F96302205E080008227EF /* FitbitAPI.swift */,
+				162F96322205EA7A008227EF /* StepStat.swift */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -443,18 +449,19 @@
 				BE222CF921237CE900AD025F /* UIView+Additions.swift in Sources */,
 				BE925D8D2125E6D800C87803 /* DailyLeaderBoardBVC.swift in Sources */,
 				BE0AB435211EB22F000E9AEA /* Structs.swift in Sources */,
+				162F962F2205DB4E008227EF /* AuthenticationControllerViewController.swift in Sources */,
 				BE222CF621237BDB00AD025F /* ActivityTypeTableViewCell.swift in Sources */,
 				16B1FFC821F7C5FB00CD8234 /* HistoryChartVC.swift in Sources */,
 				BE0AB411211A29B1000E9AEA /* Activity.swift in Sources */,
 				BE0AB433211CE5EA000E9AEA /* UIDevice+Extension.swift in Sources */,
 				BE272634211452890020E32D /* ActivityTrackingVC.swift in Sources */,
-				163EF96621F8FE2400E52B5C /* SettingVer2VC.swift in Sources */,
 				BE222CEF212362B600AD025F /* UIViewController+Additions.swift in Sources */,
 				BE222CF32123798800AD025F /* ActivityTypesView.swift in Sources */,
 				BE222CED2120C8F600AD025F /* AttributedString+Extension.swift in Sources */,
 				BE272632211452890020E32D /* AFAppDelegate.swift in Sources */,
 				BE222CF12123652100AD025F /* User.swift in Sources */,
 				BE0AB428211BF64D000E9AEA /* StoryboardInstantiation.swift in Sources */,
+				162F96312205E080008227EF /* FitbitAPI.swift in Sources */,
 				BE222CE92120C17A00AD025F /* AFTextView.swift in Sources */,
 				166EEA7821F3D9FD00ECF8F9 /* ReportPreView.swift in Sources */,
 				BE222D002123A14300AD025F /* API.swift in Sources */,
@@ -475,6 +482,7 @@
 				BE925D8F2125EA9F00C87803 /* DailyLeaderboardTableCell.swift in Sources */,
 				163EF95F21F8E15D00E52B5C /* DayAxisValueFormatter.swift in Sources */,
 				BE925D962127399800C87803 /* WalletVC.swift in Sources */,
+				162F96332205EA7A008227EF /* StepStat.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -623,7 +631,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2CVNRSPUJG;
 				INFOPLIST_FILE = Actifit/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -644,7 +652,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2CVNRSPUJG;
 				INFOPLIST_FILE = Actifit/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

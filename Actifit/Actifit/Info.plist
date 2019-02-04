@@ -2,12 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSCameraUsageDescription</key>
-    <string>Actifit  will use camera</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>Actifit would like to use the photo library</string>
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>Actifit would like to add the photo library</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -27,20 +21,30 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
-			<array/>
+			<array>
+				<string>actifitcb</string>
+			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1.0.1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Actifit  will use camera</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Actifit show health related data in the App</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Actifit update health related data from the App</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Actifit tracks your daily movement to enable you to get rewarded based on your activity count</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Actifit would like to add the photo library</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Actifit would like to use the photo library</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

@@ -68,7 +68,7 @@ class HistoryChartVC: UIViewController,ChartViewDelegate {
         rightAxis.axisMinimum = 0
         
         barChart.delegate = self
-        let set1 = BarChartDataSet(values: entries, label: "The year 2017")
+        let set1 = BarChartDataSet(values: entries, label: "The year 2019")
         let data = BarChartData(dataSet: set1)
         data.setValueFont(UIFont(name: "HelveticaNeue-Light", size: 10)!)
         data.barWidth = 0.1

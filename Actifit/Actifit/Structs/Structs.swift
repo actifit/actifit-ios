@@ -25,7 +25,7 @@ struct Messages {
     static let fetching_leaderboard = "Updating the leaderboard..."
     static let leader_no_results = "There are no users on the leaderboard now"
     static let leader_error = "An error occurred trying to fetch leaderboard list. Please Try again later."
-    static let username_missing = "Please provide a proper existing steemit username"
+    static let username_missing = "Please provide a proper existing steem username"
     static let fetching_user_balance = "Grabbing user balance..."
     static let metric_system = "Metric System"
     static let us_system = "US System"
@@ -71,6 +71,11 @@ struct Messages {
 //MARK: AppCenter Secrets
 struct AppCenter {
     static let SecretKey = "6c33684c-36f1-43dd-ba7a-f027e5803fc0"
+    static let clientID = "22D54N"
+    static let clientSecret = "2e547779cdcdd16c6b5788cf8ec97c48"
+    static let baseURL = URL(string: "https://www.fitbit.com/oauth2/authorize")
+    static let redirectURI = "actifitcb://fitbitcallback"
+    static let defaultScope = "activity+heartrate+profile+weight+location"
 }
 
 //MARK: Activity Model Keys
@@ -111,6 +116,10 @@ struct PostKeys {
     static let appType = "appType"
     static let appVersion = "appVersion"
     static let charity = "charity"
+    static let actifitUserID = "actifitUserID"
+    static let fullafitpay = "full_afit_pay"
+    static let reportSTEEMPayMode = "reportSTEEMPayMode"
+    static let dataTrackingSource = "dataTrackingSource"
 }
 
 //MARK: Measurement units
@@ -131,6 +140,10 @@ struct MeasurementUnit  {
 //MARK: Request HTTP Methods
 struct SettingsKeys  {
     static let measurementSystem = "measurementSystem"
+    static let datasource = "isDeviceSensorSystemSelected"
+    static let fitBitMeasurement = "fitBitMeasurement"
+    static let postpayout = "isSbdSPPaySystemSelected"
+    static let reminder = "isReminderSelected"
     static let isDonatingCharity = "isDonatingCharity"
     static let charityName = "charityName"
     static let charityDisplayName = "charityDisplayName"
@@ -147,9 +160,10 @@ struct HttpMethods  {
 
 //API URLS
 struct ApiUrls {
-    static let postActivity = ""
-    static let getDailyLeaderboard = ""
-    static let walletBalance = ""
-    static let transactions = ""
-    static let charities = ""
+    static let postActivity = "https://actifit-pst-cr3at0r.herokuapp.com/api/p0stact1f1t"
+    static let getDailyLeaderboard = "https://actifit-pst-cr3at0r.herokuapp.com/api/top5p0sts"
+    static let walletBalance = "https://actifitbot.herokuapp.com/user/"
+    static let transactions = "https://actifitbot.herokuapp.com/transactions/"
+    static let charities = "https://actifitbot.herokuapp.com/charities/"
+    static let getRank = "https://actifitbot.herokuapp.com/getRank/"
 }

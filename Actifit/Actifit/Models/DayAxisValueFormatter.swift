@@ -30,7 +30,7 @@ public class DayAxisValueFormatter: NSObject, IAxisValueFormatter {
         let year = Int(dateString[0])!
         let month = Int(dateString[1])!
         
-        let monthName = months[month]
+        let monthName = months[month-1]
         let yearName = "\(year)"
         
         if let chart = chart,

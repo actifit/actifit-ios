@@ -47,13 +47,18 @@ class SettingsVC: UIViewController {
     @IBOutlet weak var sbdSPPaySystemBtnDotViewWidthConstraint  : NSLayoutConstraint!
     @IBOutlet weak var sbdSPPaySystemBtnDotViewHeightConstraint  : NSLayoutConstraint!
     
+    @IBOutlet weak var fitBitSettingView: UIView!
+    @IBOutlet weak var fitBitSettingHeightCons: NSLayoutConstraint!
     
-
+    @IBOutlet weak var fetchMeasurements: UIButton!
+    @IBOutlet weak var fetchSteps: UIButton!
+    
     @IBOutlet weak var remindBtn : UIButton!
     @IBOutlet weak var timePicker : UIDatePicker!
     var isMetricSystemSelected = true
     var isDonateToCharitySelected = false
     var isDeviceSensorSystemSelected = true
+    var fitBitMeasurement = false
     var isSbdSPPaySystemSelected = true
     var isReminderSelected = false
     var charities = [Charity]()
@@ -79,6 +84,7 @@ class SettingsVC: UIViewController {
             self.isMetricSystemSelected = settings.measurementSystem == MeasurementSystem.metric.rawValue
             self.isDonateToCharitySelected = settings.isDonatingCharity
             self.isDeviceSensorSystemSelected = settings.isDeviceSensorSystemSelected
+            self.fitBitMeasurement = settings.fitBitMeasurement
             self.isReminderSelected = settings.isReminderSelected
             self.isSbdSPPaySystemSelected = settings.isSbdSPPaySystemSelected
             self.charityName = settings.charityName
@@ -113,12 +119,14 @@ class SettingsVC: UIViewController {
         self.isDeviceSensorSystemSelected = true
         self.selectDeviceSensorSystem(select: true)
         self.selectFitBitSystem(select: false)
+        applyFinihingTouchToUIElements()
     }
     
     @IBAction func fitBitSystemBtnAction(_ sender : UIButton) {
         self.isDeviceSensorSystemSelected = false
         self.selectDeviceSensorSystem(select: false)
         self.selectFitBitSystem(select: true)
+        applyFinihingTouchToUIElements()
     }
     
     @IBAction func sbdSPPaySystemBtnAction(_ sender : UIButton) {
@@ -146,6 +154,20 @@ class SettingsVC: UIViewController {
         }
     }
     
+    @IBAction func fetchMeasuremtnsBtn(_ sender: UIButton) {
+        sender.isSelected = !sender.isSelected
+        self.fitBitMeasurement = sender.isSelected
+        self.fetchMeasurements.layer.borderColor = sender.isSelected ? UIColor.clear.cgColor :  UIColor.darkGray.cgColor
+        self.fetchMeasurements.layer.borderWidth = sender.isSelected ? 0.0 : 2.0
+        if sender.isSelected {
+            self.fetchMeasurements.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+            self.fetchMeasurements.tintColor = ColorTheme
+        } else {
+            self.fetchMeasurements.setImage(nil, for: .normal)
+        }
+    }
+    @IBAction func fetchStepsAction(_ sender: Any) {
+    }
     @IBAction func reminderBtnAction(_ sender : UIButton) {
         sender.isSelected = !sender.isSelected
         self.isReminderSelected = sender.isSelected
@@ -196,9 +218,9 @@ class SettingsVC: UIViewController {
     @IBAction func saveSettingsBtnAction(_ sender : UIButton) {
         //metric system
         if let settings = self.settings {
-            settings.update(measurementSystem: self.isMetricSystemSelected ? .metric : .us, isDonatingCharity: self.isDonateToCharitySelected, charityName: charityName, charityDisplayName: charityDisplayName, isDeviceSensorSystemSelected: self.isDeviceSensorSystemSelected,isSbdSPPaySystemSelected: self.isSbdSPPaySystemSelected,isReminderSelected: self.isReminderSelected)
+            settings.update(measurementSystem: self.isMetricSystemSelected ? .metric : .us, isDonatingCharity: self.isDonateToCharitySelected, charityName: charityName, charityDisplayName: charityDisplayName, isDeviceSensorSystemSelected: self.isDeviceSensorSystemSelected,isSbdSPPaySystemSelected: self.isSbdSPPaySystemSelected,isReminderSelected: self.isReminderSelected, fitBitMeasurement: self.fitBitMeasurement)
         } else {
-            Settings.saveWith(info: [SettingsKeys.measurementSystem : (self.isMetricSystemSelected ? MeasurementSystem.metric.rawValue : MeasurementSystem.us.rawValue), SettingsKeys.isDonatingCharity : false, SettingsKeys.charityName :  charityName, SettingsKeys.charityDisplayName : charityDisplayName, SettingsKeys.datasource: isDeviceSensorSystemSelected, SettingsKeys.postpayout : isSbdSPPaySystemSelected, SettingsKeys.reminder : isReminderSelected])
+            Settings.saveWith(info: [SettingsKeys.measurementSystem : (self.isMetricSystemSelected ? MeasurementSystem.metric.rawValue : MeasurementSystem.us.rawValue), SettingsKeys.isDonatingCharity : false, SettingsKeys.charityName :  charityName, SettingsKeys.charityDisplayName : charityDisplayName, SettingsKeys.datasource: isDeviceSensorSystemSelected, SettingsKeys.postpayout : isSbdSPPaySystemSelected, SettingsKeys.reminder : isReminderSelected, SettingsKeys.fitBitMeasurement : fitBitMeasurement])
         }
         
         self.showAlertWithOkCompletion(title: nil, message: "Settings has been saved") { (cl) in
@@ -220,7 +242,8 @@ class SettingsVC: UIViewController {
         notification.fireDate = date
         notification.repeatInterval = NSCalendar.Unit.day
         notification.timeZone = NSCalendar.current.timeZone
-        notification.alertBody = "Reminder from Actifit !!!"
+        notification.alertTitle = "Actifit Reminder"
+        notification.alertBody = "You haven't posted today's activity report!"
         
         /* Action settings */
         notification.hasAction = true
@@ -281,6 +304,17 @@ class SettingsVC: UIViewController {
         self.remindBtn.layer.borderWidth = 2.0
         self.remindBtn.layer.cornerRadius = 2.0
         
+        self.fetchMeasurements.layer.borderColor = UIColor.darkGray.cgColor
+        self.fetchMeasurements.layer.borderWidth = 2.0
+        self.fetchMeasurements.layer.cornerRadius = 2.0
+        
+        self.fetchSteps.layer.borderColor = UIColor.darkGray.cgColor
+        self.fetchSteps.layer.borderWidth = 0.0
+        self.fetchSteps.layer.cornerRadius = 2.0
+        self.fetchSteps.isEnabled = true
+        self.fetchSteps.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+        self.fetchSteps.tintColor = UIColor.darkGray
+        
         //update UI
         selectMetricSystem(select: self.isMetricSystemSelected)
         selectUSSystem(select: !self.isMetricSystemSelected)
@@ -296,6 +330,13 @@ class SettingsVC: UIViewController {
             self.donateTopCharityBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
             self.donateTopCharityBtn.tintColor = ColorTheme
         }
+        
+        if self.fitBitMeasurement{
+            self.fetchMeasurements.isSelected = true
+            self.fetchMeasurements.layer.borderWidth = 0.0
+            self.fetchMeasurements.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+            self.fetchMeasurements.tintColor = ColorTheme
+        }
         if self.isReminderSelected {
             self.remindBtn.isSelected = true
             self.remindBtn.layer.borderWidth = 0.0
@@ -307,6 +348,16 @@ class SettingsVC: UIViewController {
             let date = dateFormatter.date(from: reminderTime!)
             timePicker.date = date!
 
+        }
+        
+        if !self.isDeviceSensorSystemSelected{
+            fitBitSettingView.isHidden = false
+            fitBitSettingHeightCons.constant = 100
+            updateViewConstraints()
+        }else{
+            fitBitSettingView.isHidden = true
+            fitBitSettingHeightCons.constant = 0
+            updateViewConstraints()
         }
     }
     
