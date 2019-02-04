@@ -10,6 +10,7 @@ import UIKit
 import AWSS3
 import AWSMobileClient
 import SnapKit
+import SafariServices
 
 class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     
@@ -30,7 +31,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     @IBOutlet weak var postTagsTextViewHeightConstraint : NSLayoutConstraint!
     @IBOutlet weak var postContentTextView : UITextView!
     @IBOutlet weak var postToSteemitBtn : UIButton!
-    
+    @IBOutlet weak var maxiToken : UIButton!
     @IBOutlet weak var postTitleTextViewLineLabel : UIView!
     @IBOutlet weak var postTagsTextViewLineLabel  : UIView!
     @IBOutlet weak var postContentTextViewLineLabel  : UIView!
@@ -42,15 +43,17 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     @IBOutlet weak var chestUnitLabel  : UILabel!
     @IBOutlet weak var markDownEditorHeight: NSLayoutConstraint!
     @IBOutlet weak var markDOwnView: UIView!
-    
+    var authenticationController: AuthenticationController?
+    var isFitBitCount = false
+    var fitBitStepCount = 0
     var reportView: ReportPreView!
-    
+    var isMaxiToken = false
     lazy var currentUser = {
         return User.current()
     }()
     
     lazy var settings = {
-        return Settings.current()
+           return Settings.current()
     }()
     
     var defaultPostTitle = ""
@@ -82,7 +85,10 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(appMovedToForeground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.toDayStepsUpdated(notification:)), name: NSNotification.Name.init(StepsUpdatedNotification), object: nil)
+        let content = UserDefaults.standard.string(forKey: "postcontent") ?? ""
+        postContentTextView.text = content
         setUpMarkDownView()
+        updateMarkDownView()
     }
     
     func setUpMarkDownView() {
@@ -105,7 +111,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     }
     
     func uploadData(image:UIImage) {
-        
+        ActifitLoader.show(title: "Uploading", animated: true)
         let data: Data =  UIImageJPEGRepresentation(image, 1)! //Data() //UIImageJPEGRepresentation(image, 1)!
         let deviceUUID: String = (UIDevice.current.identifierForVendor?.uuidString)!
         let filename = deviceUUID + String(Date().ticks)
@@ -124,8 +130,12 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
             DispatchQueue.main.async(execute: {
                 print(task)
                 print("![](https://usermedia.actifit.io/\(filename))")
-                self.postContentTextView.text = self.postContentTextView.text + " ![](https://usermedia.actifit.io/\(filename))"
+                var imgUrl = "![](https://usermedia.actifit.io/\(filename))"
+                // double checking for correcting '//' in the imgurl
+                imgUrl = imgUrl.replacingOccurrences(of: "io//", with: "io/")
+                self.postContentTextView.text = self.postContentTextView.text + imgUrl
                 self.updateMarkDownView()
+                    ActifitLoader.hide()
             })
         }
         
@@ -244,9 +254,14 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         
         // check minimum steps count required to post the activity
         var stepsCount = 0
-        if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
+        if isFitBitCount {
+            stepsCount = fitBitStepCount
+            activityJson[PostKeys.dataTrackingSource] = "Fitbit Tracking"
+        }else if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
             stepsCount = activity.steps
+            activityJson[PostKeys.dataTrackingSource] = "Device Tracking"
         }
+        
         if stepsCount < PostMinActivityStepsCount {
             self.showAlertWith(title: nil, message: Messages.min_activity_steps_count_error + "\(PostMinActivityStepsCount) " + "activity yet.")
             return
@@ -280,6 +295,18 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         activityJson[PostKeys.thigs] = self.thighTextField.text ?? ""
         activityJson[PostKeys.bodyfat] = self.bodyFatTextField.text ?? ""
         
+        if isMaxiToken{
+            activityJson[PostKeys.fullafitpay] = "on"
+        }
+        var isSBDPayment = false
+        
+        if let settings = self.settings {
+            isSBDPayment = settings.isSbdSPPaySystemSelected
+        }
+        if !isSBDPayment{
+            activityJson[PostKeys.reportSTEEMPayMode] = "full_SP_Pay"
+        }
+        activityJson[PostKeys.actifitUserID] = UserDefaults.standard.string(forKey: "actifitUserID") ?? ""
         activityJson[PostKeys.weightUnit] = self.weightUnitLabel.text!
         activityJson[PostKeys.heightUnit] = self.heightUnitLabel.text!
         activityJson[PostKeys.chestUnit] = self.chestUnitLabel.text!
@@ -291,6 +318,29 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         self.postActvityWith(json: activityJson)
     }
     
+    @IBAction func maxiTokenBtnAction(_ sender : UIButton) {
+        sender.isSelected = !sender.isSelected
+        self.isMaxiToken = sender.isSelected
+        self.maxiToken.layer.borderColor = sender.isSelected ? UIColor.clear.cgColor :  UIColor.darkGray.cgColor
+        self.maxiToken.layer.borderWidth = sender.isSelected ? 0.0 : 2.0
+        if sender.isSelected {
+            self.maxiToken.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+            self.maxiToken.tintColor = ColorTheme
+        } else {
+            self.maxiToken.setImage(nil, for: .normal)
+        }
+    }
+    
+    @IBAction func fitBitBtnAction(_ sender: Any) {
+        authenticationController = AuthenticationController(delegate: self)
+        authenticationController?.login(fromParentViewController: self)
+    }
+    @IBAction func videoBtn(_ sender: Any) {
+        let url = URL(string: "https://d.tube/#!/v/raserrano/h7rze7he")!
+        let controller = SFSafariViewController(url: url)
+        self.present(controller, animated: true, completion: nil)
+        controller.delegate = self
+    }
     //MARK: HELPERS
     
     func applyFinishingTouchToUIElements() {
@@ -311,6 +361,10 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         self.backBtn.tintColor = UIColor.white
         self.postTitleTextView.heightConstraint = self.postTitleTextViewHeightConstraint
         self.postTagsTextView.heightConstraint = self.postTagsTextViewHeightConstraint
+        
+        self.maxiToken.layer.borderColor = UIColor.darkGray.cgColor
+        self.maxiToken.layer.borderWidth = 2.0
+        self.maxiToken.layer.cornerRadius = 2.0
     }
     
     func showMeasurementUnits() {
@@ -405,6 +459,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
                 if let jsonString = json as? String {
                     if jsonString == "success" {
                         //update user last post time interval
+                        UserDefaults.standard.set("", forKey: "postcontent")
                         if let currentUser =  User.current() {
                             currentUser.updateUser(steemit_username: currentUser.steemit_username, private_posting_key: currentUser.private_posting_key, last_post_date: Date())
                             
@@ -437,6 +492,44 @@ extension Date {
         return UInt64((self.timeIntervalSince1970 + 62_135_596_800) * 10_000_000)
     }
 }
+
+extension PostToSteemitVC: AuthenticationProtocol{
+    func authorizationDidFinish(_ success: Bool) {
+        print("Hello World with \(success)!")
+        guard let authToken = authenticationController?.authenticationToken else {
+            return
+        }
+        FitbitAPI.sharedInstance.authorize(with: authToken)
+        let _ = StepStat.fetchTodaysStepStat() { [weak self] stepStat, error in
+            let steps = stepStat?.steps ?? 0
+            print(steps)
+            self?.isFitBitCount = true
+            self?.fitBitStepCount = Int(steps)
+            self?.activityCountLabel.text = "\(steps)"
+        }
+        var fetchMeasurments = false
+        
+        if let settings = self.settings {
+            fetchMeasurments = settings.fitBitMeasurement
+            print(settings.fitBitMeasurement)
+        }
+     
+        if fetchMeasurments {
+            let _ = StepStat.fetchUser() { [weak self] userStat, error in
+                
+                self?.heightTextField.text = "\(userStat!["height"] as! NSNumber)"
+                self?.weightTextField.text = "\(userStat!["weight"] as! NSNumber)"
+            }
+        }
+    }
+}
+
+// MARK: Safari Delegate
+extension PostToSteemitVC : SFSafariViewControllerDelegate{
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        controller.dismiss(animated: true, completion: nil)
+    }
+}
 // MARK: UIImagePickerControllerDelegate
 extension PostToSteemitVC : UIImagePickerControllerDelegate{
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
@@ -462,6 +555,7 @@ extension PostToSteemitVC : UITextViewDelegate {
     }
     
     func textViewDidChange(_ textView: UITextView) {
+        UserDefaults.standard.set(textView.text, forKey: "postcontent")
         updateMarkDownView()
     }
     

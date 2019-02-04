@@ -22,6 +22,8 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
     @IBOutlet weak var viewDailyLeaderboardBtn : UIButton!
     @IBOutlet weak var viewWalletBtn : UIButton!
     @IBOutlet weak var settingsBtn : UIButton!
+    @IBOutlet weak var username: UILabel!
+    @IBOutlet weak var rank: UILabel!
     
     //MARK: INSTANCE VARIABLES
     
@@ -55,11 +57,42 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(appMovedToBackground), name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
         notificationCenter.addObserver(self, selector: #selector(appMovedToForeground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
+        checkActifitUserID()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.isNavigationBarHidden = true
+        if let currentUser =  User.current() {
+            if currentUser.steemit_username == "" {
+                return                
+            }
+            let today = Date().dateString()
+            let lastRankRequest = UserDefaults.standard.string(forKey: "lastRankRequest")
+            if today == lastRankRequest{
+                return
+            }
+            UserDefaults.standard.set(today, forKey: "lastRankRequest")
+            APIMaster.getRank(username: currentUser.steemit_username,completion: { (response) in
+                if let response = response as? String {
+                    let data = response.utf8Data()
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: [])
+                        if let jsonInfo = (json as? NSDictionary){
+                            if let rank = jsonInfo["user_rank"] as? Int {
+                                DispatchQueue.main.async(execute: {
+                                    let totalRanks = "/100";
+                                    self.rank.text = "\(rank)\(totalRanks)"
+                                    self.username.text = "@\(currentUser.steemit_username)"
+                                })
+                            }
+                        }
+                    } catch {
+                        print("unable to fetch tokens")
+                    }
+                }
+            }, failure: nil)
+        }
         self.checkAuthorizationStatusAndStartTracking()
     }
     
@@ -74,11 +107,11 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
     
     @IBAction func postToSteemitBtnAction(_ sender : UIButton) {
         var userCanPost = true
-        if let currentUser =  User.current() {
+      /*  if let currentUser =  User.current() {
             // userCanPost = abs(currentUser.last_post_date_time_interval) > abs(AppDelegate.todayStartDate().timeIntervalSinceNow)
             let calender = Calendar.autoupdatingCurrent
             userCanPost = !(calender.isDateInToday(currentUser.last_post_date))
-        }
+        }*/
         if userCanPost {
             let postToSteemitVC : PostToSteemitVC = PostToSteemitVC.instantiateWithStoryboard(appStoryboard: .SB_Main) as! PostToSteemitVC
             
@@ -111,6 +144,16 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
     }
     
     //MARK: HELPERS
+    
+    func checkActifitUserID(){
+        var actifitUserID = UserDefaults.standard.string(forKey: "actifitUserID") ?? ""
+        if actifitUserID == ""{
+            let appVersion = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String
+            let uuid = NSUUID().uuidString
+            actifitUserID = "\(uuid)\(appVersion)"
+            UserDefaults.standard.set(actifitUserID, forKey: "actifitUserID")
+        }
+    }
     
     @objc func appMovedToBackground() {
         self.timer?.invalidate()
@@ -151,7 +194,6 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
                 [weak self] pedometerData, error in
                 guard let pedometerData = pedometerData, error == nil else { return }
                 DispatchQueue.main.async {
-                    print("steps from background tracking : \(pedometerData.numberOfSteps)")
                     let totalSteps = pedometerData.numberOfSteps.intValue
                     self?.showStepsCount(count: totalSteps)
                     self?.saveCurrentStepsCounts(steps: totalSteps, midnightStartDate: AppDelegate.todayStartDate())

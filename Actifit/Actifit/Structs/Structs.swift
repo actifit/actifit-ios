@@ -25,7 +25,7 @@ struct Messages {
     static let fetching_leaderboard = "Updating the leaderboard..."
     static let leader_no_results = "There are no users on the leaderboard now"
     static let leader_error = "An error occurred trying to fetch leaderboard list. Please Try again later."
-    static let username_missing = "Please provide a proper existing steemit username"
+    static let username_missing = "Please provide a proper existing steem username"
     static let fetching_user_balance = "Grabbing user balance..."
     static let metric_system = "Metric System"
     static let us_system = "US System"
@@ -70,7 +70,12 @@ struct Messages {
 
 //MARK: AppCenter Secrets
 struct AppCenter {
-    static let SecretKey = "6c33684c-36f1-43dd-ba7a-f027e5803fc0"
+    static let SecretKey = ""
+    static let clientID = ""
+    static let clientSecret = ""
+    static let baseURL = URL(string: "")
+    static let redirectURI = ""
+    static let defaultScope = ""
 }
 
 //MARK: Activity Model Keys
@@ -111,6 +116,10 @@ struct PostKeys {
     static let appType = "appType"
     static let appVersion = "appVersion"
     static let charity = "charity"
+    static let actifitUserID = "actifitUserID"
+    static let fullafitpay = "full_afit_pay"
+    static let reportSTEEMPayMode = "reportSTEEMPayMode"
+    static let dataTrackingSource = "dataTrackingSource"
 }
 
 //MARK: Measurement units
@@ -131,6 +140,10 @@ struct MeasurementUnit  {
 //MARK: Request HTTP Methods
 struct SettingsKeys  {
     static let measurementSystem = "measurementSystem"
+    static let datasource = "isDeviceSensorSystemSelected"
+    static let fitBitMeasurement = "fitBitMeasurement"
+    static let postpayout = "isSbdSPPaySystemSelected"
+    static let reminder = "isReminderSelected"
     static let isDonatingCharity = "isDonatingCharity"
     static let charityName = "charityName"
     static let charityDisplayName = "charityDisplayName"
@@ -152,4 +165,5 @@ struct ApiUrls {
     static let walletBalance = ""
     static let transactions = ""
     static let charities = ""
+    static let getRank = ""
 }
