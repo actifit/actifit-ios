@@ -70,12 +70,12 @@ struct Messages {
 
 //MARK: AppCenter Secrets
 struct AppCenter {
-    static let SecretKey = "6c33684c-36f1-43dd-ba7a-f027e5803fc0"
-    static let clientID = "22D54N"
-    static let clientSecret = "2e547779cdcdd16c6b5788cf8ec97c48"
-    static let baseURL = URL(string: "https://www.fitbit.com/oauth2/authorize")
-    static let redirectURI = "actifitcb://fitbitcallback"
-    static let defaultScope = "activity+heartrate+profile+weight+location"
+    static let SecretKey = ""
+    static let clientID = ""
+    static let clientSecret = ""
+    static let baseURL = URL(string: "")
+    static let redirectURI = ""
+    static let defaultScope = ""
 }
 
 //MARK: Activity Model Keys
@@ -160,10 +160,10 @@ struct HttpMethods  {
 
 //API URLS
 struct ApiUrls {
-    static let postActivity = "https://actifit-pst-cr3at0r.herokuapp.com/api/p0stact1f1t"
-    static let getDailyLeaderboard = "https://actifit-pst-cr3at0r.herokuapp.com/api/top5p0sts"
-    static let walletBalance = "https://actifitbot.herokuapp.com/user/"
-    static let transactions = "https://actifitbot.herokuapp.com/transactions/"
-    static let charities = "https://actifitbot.herokuapp.com/charities/"
-    static let getRank = "https://actifitbot.herokuapp.com/getRank/"
+    static let postActivity = ""
+    static let getDailyLeaderboard = ""
+    static let walletBalance = ""
+    static let transactions = ""
+    static let charities = ""
+    static let getRank = ""
 }
