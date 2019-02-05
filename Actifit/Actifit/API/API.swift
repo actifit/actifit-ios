@@ -23,6 +23,13 @@ public class API : NSObject{
     }
  
     //MARK: API callers
+    func getRank(username : String, completion : APICompletionHandler, failure : APIFailureHandler) {
+        let urlStr = "\(ApiUrls.getRank)\(username)"
+        let url = URL.init(string: urlStr)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        self.forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
     
     func postActvityWith(info : [String : Any], completion : APICompletionHandler, failure : APIFailureHandler) {
         let urlStr = ApiUrls.postActivity

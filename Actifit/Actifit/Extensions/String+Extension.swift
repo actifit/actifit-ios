@@ -31,5 +31,14 @@ extension String {
     func byTrimming(string : String) -> String {
         return self.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet.init(charactersIn: string))
     }
+    func date(withFormat format: String = "yyyy-MM-dd") -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.date(from: self)
+    }
+    
+    func dateComponents(withFormat format: String = "yyyy-MM-dd", components: Set<Calendar.Component> = [.day, .month, .year]) -> DateComponents? {
+        return self.date(withFormat: format)?.dateComponents(components: components)
+    }
     
 }

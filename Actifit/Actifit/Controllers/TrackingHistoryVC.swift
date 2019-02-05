@@ -32,6 +32,11 @@ class TrackingHistoryVC: UIViewController {
     }
     
     //MARK: INTERFACE BUILDER ACTIONS
+    @IBAction func chartBtnAction(_ sender: Any) {
+        let historyChartVC : HistoryChartVC = HistoryChartVC.instantiateWithStoryboard(appStoryboard: .SB_Main) as! HistoryChartVC
+        historyChartVC.history = history
+        self.navigationController?.pushViewController(historyChartVC, animated: true)
+    }
     
     @IBAction func backBtnAction(_ sender : UIButton) {
         self.navigationController?.popViewController(animated: true)
