@@ -113,7 +113,7 @@ extension DailyLeaderBoardBVC : UITableViewDataSource, UITableViewDelegate {
     //MARK: UITableViewDataSource
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Daily Leaderboard: Top 5"
+        return "Daily Leaderboard: Top Actifitters"
     }
 }
 

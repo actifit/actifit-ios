@@ -24,4 +24,14 @@ extension Date {
     var isLastDayOfMonth: Bool {
         return tomorrow.month != month
     }
+    func dateComponents(components: Set<Calendar.Component> = [.day, .month, .year]) -> DateComponents {
+        let calendar = Calendar.current
+        return calendar.dateComponents(components, from: self)
+    }
+    
+    func dateString(withFormat format: String = "yyyy-MM-dd") -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.string(from: self)
+    }
 }
