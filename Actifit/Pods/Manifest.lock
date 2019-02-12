@@ -14,10 +14,13 @@ PODS:
   - Charts (3.2.1):
     - Charts/Core (= 3.2.1)
   - Charts/Core (3.2.1)
+  - Crashlytics (3.12.0):
+    - Fabric (~> 1.9.0)
   - EFCMark (0.0.2)
-  - EFCountingLabel (4.1.0)
+  - EFCountingLabel (4.2.1)
   - EFMarkdown (4.1.0):
     - EFCMark (= 0.0.2)
+  - Fabric (1.9.0)
   - IQKeyboardManagerSwift (6.2.0)
   - Realm (3.13.1):
     - Realm/Headers (= 3.13.1)
@@ -31,8 +34,10 @@ DEPENDENCIES:
   - AWSMobileClient (~> 2.8.0)
   - AWSS3 (~> 2.8.0)
   - Charts
+  - Crashlytics
   - EFCountingLabel (~> 4.0)
   - EFMarkdown
+  - Fabric
   - IQKeyboardManagerSwift
   - RealmSwift
   - SnapKit (~> 4.0.0)
@@ -46,9 +51,11 @@ SPEC REPOS:
     - AWSMobileClient
     - AWSS3
     - Charts
+    - Crashlytics
     - EFCMark
     - EFCountingLabel
     - EFMarkdown
+    - Fabric
     - IQKeyboardManagerSwift
     - Realm
     - RealmSwift
@@ -62,14 +69,16 @@ SPEC CHECKSUMS:
   AWSMobileClient: 59072ca49e82706c6d958f7a08e4a285d7197af1
   AWSS3: ead679e0887fa3ca8dddd054643a197b55360f1f
   Charts: f122fb70b19847fa5817d018b77d6c5a2296ab25
+  Crashlytics: 07fb167b1694128c1c9a5a5cc319b0e9c3ca0933
   EFCMark: 78fb32ed4107c8efc640ad9d20ac31cd44ce2046
-  EFCountingLabel: d3da80ee35b212f3b434ed9a3431653504b9f982
+  EFCountingLabel: a17e194c82162a2cfae55be2df2d75bb2f433c12
   EFMarkdown: d6373ec870be9ab8186c2409c1194e477377c014
+  Fabric: f988e33c97f08930a413e08123064d2e5f68d655
   IQKeyboardManagerSwift: b07ccf9d8cafe993dcd6cb794eb4ba34611a0c4e
   Realm: 50071da38fe079e0735e47c9f2eae738c68c5996
   RealmSwift: 8a1e6a02b7a08cd17a31e3115143fb69fe5f3fb9
   SnapKit: 0de968a9fec17499afa29683b05d0c775b6d1c29
 
-PODFILE CHECKSUM: 63f5c52605d38132078c813a856fb1792e6e6368
+PODFILE CHECKSUM: 3391ea0b803f5e9c0db72cb4880ae76074ef7b89
 
 COCOAPODS: 1.5.3

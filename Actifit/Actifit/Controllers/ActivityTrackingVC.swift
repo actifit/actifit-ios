@@ -24,6 +24,7 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
     @IBOutlet weak var settingsBtn : UIButton!
     @IBOutlet weak var username: UILabel!
     @IBOutlet weak var rank: UILabel!
+    @IBOutlet weak var todayDate: UILabel!
     
     //MARK: INSTANCE VARIABLES
     
@@ -44,10 +45,6 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
         super.viewDidLoad()
         //stepsCountLabel.method = .easeInOut
         stepsCountLabel.format = "%d"
-        if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
-            self.showStepsCount(count: activity.steps)
-        }
-        
         self.postToSteemitBtn.layer.cornerRadius = 4.0
         self.viewTrackingHistoryBtn.layer.cornerRadius = 4.0
         self.viewDailyLeaderboardBtn.layer.cornerRadius = 4.0
@@ -60,28 +57,34 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
         checkActifitUserID()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.navigationController?.isNavigationBarHidden = true        
+    func displayUserAndRank(){
+        let today = Date().dateString()
+        todayDate.text = today
+        let lastRankRequest = UserDefaults.standard.string(forKey: "rankLastRequest")?.date()
+        var fetchNewRankVal = false
+        if lastRankRequest == nil || UserDefaults.standard.string(forKey: "rank") == nil{
+            fetchNewRankVal = true
+        }else if today.date()! > lastRankRequest! {
+            fetchNewRankVal = true
+        }
+        if fetchNewRankVal == false{
+            self.rank.text = UserDefaults.standard.string(forKey: "rank")
+            self.username.text = UserDefaults.standard.string(forKey: "username")
+            
+            return
+        }
         if let currentUser =  User.current() {
             if currentUser.steemit_username == "" {
-                return                
-            }
-            let today = Date().dateString()
-            let lastRankRequest = UserDefaults.standard.string(forKey: "lastRankRequest")
-            if today == lastRankRequest{
-                self.rank.text = UserDefaults.standard.string(forKey: "rank")
-                self.username.text = UserDefaults.standard.string(forKey: "username")
                 return
             }
-            UserDefaults.standard.set(today, forKey: "lastRankRequest")
+            UserDefaults.standard.set(today, forKey: "rankLastRequest")
             APIMaster.getRank(username: currentUser.steemit_username,completion: { (response) in
                 if let response = response as? String {
                     let data = response.utf8Data()
                     do {
                         let json = try JSONSerialization.jsonObject(with: data, options: [])
                         if let jsonInfo = (json as? NSDictionary){
-                            if let rank = jsonInfo["user_rank"] as? Int {
+                            if let rank = jsonInfo["user_rank"] as? Double {
                                 DispatchQueue.main.async(execute: {
                                     let totalRanks = "/100";
                                     self.rank.text = "\(rank)\(totalRanks)"
@@ -97,7 +100,13 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
                 }
             }, failure: nil)
         }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.isNavigationBarHidden = true
         self.checkAuthorizationStatusAndStartTracking()
+        displayUserAndRank()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -111,14 +120,13 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
     
     @IBAction func postToSteemitBtnAction(_ sender : UIButton) {
         var userCanPost = true
-      /*  if let currentUser =  User.current() {
+        if let currentUser =  User.current() {
             // userCanPost = abs(currentUser.last_post_date_time_interval) > abs(AppDelegate.todayStartDate().timeIntervalSinceNow)
             let calender = Calendar.autoupdatingCurrent
             userCanPost = !(calender.isDateInToday(currentUser.last_post_date))
-        }*/
+        }
         if userCanPost {
             let postToSteemitVC : PostToSteemitVC = PostToSteemitVC.instantiateWithStoryboard(appStoryboard: .SB_Main) as! PostToSteemitVC
-            
             self.navigationController?.pushViewController(postToSteemitVC, animated: true)
         } else {
             self.showAlertWith(title: nil, message: Messages.one_post_per_day_error)
@@ -347,8 +355,9 @@ extension ActivityTrackingVC {
     
     //show the user activity data on UI
     private func showStepsCount(count : Int) {
-        if (Settings.current()?.isDeviceSensorSystemSelected)!{
-            self.stepsCountLabel.text = "Fitbit Tracking Mode On"
+        if UserDefaults.standard.bool(forKey: "isFitSystemSelected") == true{
+                self.stepsCountLabel.text = "Fitbit Tracking Mode On"
+            return
         }
         //self.stepsCountLabel.text = "Total Activity Today: " + "\(count)"
         //   self.stepsCountLabel.text = "\(count)"

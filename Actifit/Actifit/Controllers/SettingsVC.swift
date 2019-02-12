@@ -217,6 +217,7 @@ class SettingsVC: UIViewController {
     
     @IBAction func saveSettingsBtnAction(_ sender : UIButton) {
         //metric system
+        UserDefaults.standard.set(!isDeviceSensorSystemSelected, forKey: "isFitSystemSelected")
         if let settings = self.settings {
             settings.update(measurementSystem: self.isMetricSystemSelected ? .metric : .us, isDonatingCharity: self.isDonateToCharitySelected, charityName: charityName, charityDisplayName: charityDisplayName, isDeviceSensorSystemSelected: self.isDeviceSensorSystemSelected,isSbdSPPaySystemSelected: self.isSbdSPPaySystemSelected,isReminderSelected: self.isReminderSelected, fitBitMeasurement: self.fitBitMeasurement)
         } else {
@@ -343,6 +344,9 @@ class SettingsVC: UIViewController {
             self.remindBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
             self.remindBtn.tintColor = ColorTheme
             let reminderTime = UserDefaults.standard.string(forKey: "ReminderDate")
+            if reminderTime == nil{
+                return
+            }
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat =  "HH:mm"
             let date = dateFormatter.date(from: reminderTime!)

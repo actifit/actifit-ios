@@ -280,9 +280,10 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
                 return
             }
         }
-        
-        activityJson[PostKeys.author] = self.currentUser?.steemit_username ?? ""
-        activityJson[PostKeys.posting_key] = self.currentUser?.private_posting_key ?? ""
+        let userName = (self.steemitUsernameTextField.text ?? "").byTrimming(string: "@").lowercased()
+        let privatePostingKey = self.steemitPostingPrivateKeyTextField.text ?? ""
+        activityJson[PostKeys.author] = userName
+        activityJson[PostKeys.posting_key] = privatePostingKey
         activityJson[PostKeys.title] = self.postTitleTextView.text.isEmpty ? self.defaultPostTitle : self.postTitleTextView.text
         activityJson[PostKeys.content] = self.postContentTextView.text
         activityJson[PostKeys.tags] = self.tagsString()
@@ -416,6 +417,9 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         
         if let currentUser = self.currentUser {
             //update user saved username and private posting key
+            if self.currentUser?.steemit_username != userName{
+                UserDefaults.standard.set(nil, forKey:"rank")
+            }
             currentUser.updateUser(steemit_username: userName, private_posting_key: privatePostingKey, last_post_date : currentUser.last_post_date)
         } else {
             //save user username and private posting key

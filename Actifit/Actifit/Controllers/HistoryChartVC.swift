@@ -18,13 +18,15 @@ class HistoryChartVC: UIViewController,ChartViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let formatter = DateFormatter()
-        var i:Int = 0
+        var i:Int = history.count - 1
         for tempData in history{
-            let tempLabel : String = "\(tempData.date)"
+            let dateFormatter = DateFormatter()
+            dateFormatter.locale = NSLocale.current
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let tempLabel = dateFormatter.string(from: tempData.date)
             labels.append(tempLabel)
             entries.append(BarChartDataEntry(x: Double(i), y: Double(tempData.steps)))
-            i += 1
+            i -= 1
         }
         labels.reverse()
         entries.reverse()
