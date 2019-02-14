@@ -31,6 +31,8 @@ public enum EFLabelCountingMethod: Int {
     case easeIn = 1
     case easeOut = 2
     case easeInOut = 3
+    case easeInBounce = 4
+    case easeOutBounce = 5
 }
 
 //MARK: - UILabelCounter
@@ -66,6 +68,32 @@ public class UILabelCounterEaseInOut: UILabelCounter {
         } else {
             return CGFloat(0.5 * (2.0 - powf(Float(2.0 - newt), kUILabelCounterRate)))
         }
+    }
+}
+
+public class UILabelCounterEaseInBounce: UILabelCounter {
+    public func update(_ t: CGFloat) -> CGFloat {
+        if t < 4.0 / 11.0 {
+            return CGFloat(1.0 - (powf(11.0 / 4.0, 2) * powf(Float(t), 2))) - t
+        } else if t < 8.0 / 11.0 {
+            return CGFloat(1.0 - (3.0 / 4.0 + powf(11.0 / 4.0, 2) * powf(Float(t - 6.0 / 11.0), 2))) - t
+        } else if t < 10.0 / 11.0 {
+            return CGFloat(1.0 - (15.0 / 16.0 + powf(11.0 / 4.0, 2) * powf(Float(t - 9.0 / 11.0), 2))) - t
+        }
+        return CGFloat(1.0 - (63.0 / 64.0 + powf(11.0 / 4.0, 2) * powf(Float(t - 21.0 / 22.0), 2))) - t
+    }
+}
+
+public class UILabelCounterEaseOutBounce: UILabelCounter {
+    public func update(_ t: CGFloat) -> CGFloat {
+        if t < 4.0 / 11.0 {
+            return CGFloat(powf(11.0 / 4.0, 2) * powf(Float(t), 2))
+        } else if t < 8.0 / 11.0 {
+            return CGFloat(3.0 / 4.0 + powf(11.0 / 4.0, 2) * powf(Float(t - 6.0 / 11.0), 2))
+        } else if t < 10.0 / 11.0 {
+            return CGFloat(15.0 / 16.0 + powf(11.0 / 4.0, 2) * powf(Float(t - 9.0 / 11.0), 2))
+        }
+        return CGFloat(63.0 / 64.0 + powf(11.0 / 4.0, 2) * powf(Float(t - 21.0 / 22.0), 2))
     }
 }
 
@@ -116,16 +144,16 @@ open class EFCountingLabel: UILabel {
         switch self.method {
         case .linear:
             self.counter = UILabelCounterLinear()
-            break
         case .easeIn:
             self.counter = UILabelCounterEaseIn()
-            break
         case .easeOut:
             self.counter = UILabelCounterEaseOut()
-            break
         case .easeInOut:
             self.counter = UILabelCounterEaseInOut()
-            break
+        case .easeOutBounce:
+            self.counter = UILabelCounterEaseOutBounce()
+        case .easeInBounce:
+            self.counter = UILabelCounterEaseInBounce()
         }
 
         let timer = CADisplayLink(target: self, selector: #selector(EFCountingLabel.updateValue(_:)))
@@ -134,8 +162,8 @@ open class EFCountingLabel: UILabel {
         } else {
             timer.frameInterval = 2
         }
-        timer.add(to: RunLoop.main, forMode:RunLoop.Mode.defaultRunLoopMode)
-        timer.add(to: RunLoop.main, forMode:RunLoop.Mode.UITrackingRunLoopMode)
+        timer.add(to: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+        timer.add(to: RunLoop.main, forMode: RunLoopMode.UITrackingRunLoopMode)
         self.timer = timer
     }
 
@@ -187,7 +215,7 @@ open class EFCountingLabel: UILabel {
         }
     }
 
-    private func setTextValue(_ value: CGFloat) {
+    public func setTextValue(_ value: CGFloat) {
         if let tryAttributedFormatBlock = self.attributedFormatBlock {
             self.attributedText = tryAttributedFormatBlock(value)
         } else if let tryFormatBlock = self.formatBlock {

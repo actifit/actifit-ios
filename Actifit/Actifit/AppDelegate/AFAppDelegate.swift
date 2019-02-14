@@ -9,6 +9,8 @@
 import UIKit
 import RealmSwift
 import IQKeyboardManagerSwift
+import Fabric
+import Crashlytics
 
 @UIApplicationMain
 class AFAppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,6 +20,7 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 
         //Enabling IBKeyboardManager to handle keyboard for textfields and textviews
+        Fabric.with([Crashlytics.self])
         IQKeyboardManager.shared.enable = true
         application.registerUserNotificationSettings(UIUserNotificationSettings(types: UIUserNotificationType(rawValue: UIUserNotificationType.sound.rawValue | UIUserNotificationType.badge.rawValue | UIUserNotificationType.alert.rawValue), categories: nil))
         UIApplication.shared.applicationIconBadgeNumber = 0

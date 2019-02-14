@@ -13,7 +13,7 @@ class ActivityTypesView: UIView {
     @IBOutlet weak var activitiesTableView : UITableView!
     @IBOutlet weak var doneBtn : UIButton!
 
-    var activityTypesOrCharities = ["Aerobics", "BasketBall", "Boxing", "Bootcamp", "Chasing Pokemons", "Cricket", "Cycling", "Daily Activity", "Dancing", "Elliptical", "Football", "Gardening", "Geocaching", "Golf", "Gym", "Hiking", "Hockey", "House Chores", "Jogging", "Kettlebell Training", "Martial Arts", "Moving Around Office", "Photowalking", "Rollerblading", "Rope Skipping", "Running", "Scootering", "Shopping", "Shoveling", "Skating", "Skiing", "Stair Mill", "Swimming", "Table Tennis", "Tennis", "Treadmill", "Volleyball", "Walking", "Weight Lifting"]
+    var activityTypesOrCharities = ["Aerobics", "BasketBall","Badminton", "Boxing", "Bootcamp", "Chasing Pokemons", "Cricket", "Cycling", "Daily Activity", "Dancing", "Elliptical", "Football", "Gardening", "Geocaching", "Golf", "Gym", "Hiking", "Hockey", "House Chores", "Jogging", "Kettlebell Training", "Martial Arts", "Moving Around Office", "Photowalking","Pickle Ball", "Rollerblading", "Rope Skipping", "Running", "Scootering", "Shopping", "Shoveling", "Skating", "Skiing", "Stair Mill", "Swimming", "Table Tennis", "Tennis", "Treadmill", "Volleyball", "Walking", "Weight Lifting"]
     
     var selectedActivities = [String]()
     var isForCharity = false
