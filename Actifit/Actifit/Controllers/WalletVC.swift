@@ -10,6 +10,14 @@ import UIKit
 
 class WalletVC: UIViewController {
     
+    
+    @IBOutlet weak var yourWalletLabel: UILabel!
+    @IBOutlet weak var steemitUsernameLabel: UILabel!
+    
+    @IBOutlet weak var actifitTokensHeadingLabel: UILabel!
+    
+    @IBOutlet weak var transactionsHeadingLabel: UILabel!
+    
     @IBOutlet weak var backBtn : UIButton!
     @IBOutlet weak var usernameTextField : AFTextField!
     @IBOutlet weak var checkBalanceBtn : UIButton!
@@ -36,15 +44,36 @@ class WalletVC: UIViewController {
         }
         self.applyFinishingTouchToUIElements()
         self.getWalletBalance()
+        setupInitials()
+        
+    
     }
+    
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
      }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
      }
+    
+    func setupInitials()
+    {
+        yourWalletLabel.text                  = "your_wallet_title".localized()
+        steemitUsernameLabel.text             = "steem_username_lbl".localized()
+        checkBalanceBtn.titleLabel!.text      = "get_balance_btn_lbl".localized()
+        actifitTokensHeadingLabel.text        = "afit_token_balance".localized()
+        actfitTokensLabel.text                = "unable_fetch_balance".localized()
+        transactionsHeadingLabel.text         = "actifit_transactions_lbl".localized()
+        
+        
+    }
+    
+
+    
     
     //MARK: INTERFACE BUILDER ACTIONS
     
@@ -80,6 +109,7 @@ class WalletVC: UIViewController {
             })
             self?.getTransactions()
             var actifitTokens = "Unable to fetch balance"
+
             if let jsonString = jsonString as? String {
                 let data = jsonString.utf8Data()
                 do {
