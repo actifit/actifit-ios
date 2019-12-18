@@ -70,7 +70,7 @@ struct Messages {
 
 //MARK: AppCenter Secrets
 struct AppCenter {
-    static let SecretKey = "6c33684c-36f1-43dd-ba7a-f027e5803fc0"
+    static let SecretKey = ""
 }
 
 //MARK: Activity Model Keys
@@ -78,6 +78,13 @@ struct ActivityKeys {
     static let id = "id"
     static let date = "date"
     static let steps = "steps"
+}
+//MARK: Activity Model Keys
+struct fifteenActivityKeys {
+   // static let id = "id"
+    static let date = "date"
+    static let steps = "steps"
+    static let interval = "interval"
 }
 
 //MARK: User Model Keys
@@ -111,6 +118,13 @@ struct PostKeys {
     static let appType = "appType"
     static let appVersion = "appVersion"
     static let charity = "charity"
+    static let fullafitpay = "full_afit_pay"
+    static let reportSTEEMPayMode = "reportSTEEMPayMode"
+    static let actifitUserID = "actifitUserID"
+    static let dataTrackingSource = "dataTrackingSource"
+    static let activityDate = "activityDate"
+    static let detailedActivity = "detailedActivity"
+    
 }
 
 //MARK: Measurement units
@@ -134,6 +148,12 @@ struct SettingsKeys  {
     static let isDonatingCharity = "isDonatingCharity"
     static let charityName = "charityName"
     static let charityDisplayName = "charityDisplayName"
+   
+    static let datasource = "datasource"
+    static let postpayout = "postpayout"
+    static let reminder = "reminder"
+    static let fitBitMeasurement = "fitBitMeasurement"
+    static let AppVersion = "AppVersion"
 }
 
 //MARK: Request HTTP Methods
@@ -147,9 +167,11 @@ struct HttpMethods  {
 
 //API URLS
 struct ApiUrls {
-    static let postActivity = ""
-    static let getDailyLeaderboard = ""
-    static let walletBalance = ""
-    static let transactions = ""
-    static let charities = ""
+    static let postActivity = "/p0stact1f1t"
+   // static let getDailyLeaderboard = "/top5p0sts"
+    static let getDailyLeaderboard = "/topP0stsV2"
+    static let walletBalance = "/user/"
+    static let transactions = "/transactions/"
+    static let charities = "/charities/"
+    static let getRank = "/getRank/"
 }
