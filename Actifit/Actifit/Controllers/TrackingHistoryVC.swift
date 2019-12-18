@@ -12,8 +12,10 @@ class TrackingHistoryVC: UIViewController {
 
     @IBOutlet weak var trackingHistoryTableView : UITableView!
     @IBOutlet weak var backBtn : UIButton!
-
+    @IBOutlet weak var chartViewBtn: UIButton!
+    
     var history = [Activity]()
+    var activityHistory = "Activity History"
     
     //MARK: VIEW LIFE CYCLE
     
@@ -29,7 +31,15 @@ class TrackingHistoryVC: UIViewController {
 
         self.backBtn.setImage(#imageLiteral(resourceName: "back_black").withRenderingMode(.alwaysTemplate), for: .normal)
         self.backBtn.tintColor = UIColor.white
+        setupInitials()
     }
+    
+    func setupInitials()
+    {
+        chartViewBtn.titleLabel!.text                  = "Ver Gráfico".localized()
+        activityHistory                                = "activity_step_history_title".localized()
+    }
+    
     
     //MARK: INTERFACE BUILDER ACTIONS
     @IBAction func chartBtnAction(_ sender: Any) {
@@ -40,6 +50,12 @@ class TrackingHistoryVC: UIViewController {
     
     @IBAction func backBtnAction(_ sender : UIButton) {
         self.navigationController?.popViewController(animated: true)
+    }
+    @IBAction func viewDayHistory(_ sender : UIButton) {
+        let historyChartVC : DayHistroyVC = DayHistroyVC.instantiateWithStoryboard(appStoryboard: .SB_Main) as! DayHistroyVC
+        historyChartVC.history = history
+        historyChartVC.selectedDate = self.history[sender.tag].date
+        self.navigationController?.pushViewController(historyChartVC, animated: true)
     }
 }
 
@@ -53,6 +69,7 @@ extension TrackingHistoryVC : UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : ActivityHistoryCell = tableView.dequeueReusableCell(withIdentifier: "HistoryCell", for: indexPath) as! ActivityHistoryCell
+        cell.viewHistoryDayButton.tag = indexPath.row
         cell.configureWith(activity: self.history[indexPath.row])
         return cell
     }
@@ -68,6 +85,6 @@ extension TrackingHistoryVC : UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Activity History"
+        return activityHistory
     }
 }
