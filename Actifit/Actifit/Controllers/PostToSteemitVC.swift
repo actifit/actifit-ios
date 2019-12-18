@@ -14,12 +14,34 @@ import SafariServices
 
 class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     
+    @IBOutlet weak var markdownContentLabel: UILabel!
+    @IBOutlet weak var postContentLabel: UILabel!
+    @IBOutlet weak var insertImageBtn: UIButton!
+    @IBOutlet weak var reportImagesLabel: UILabel!
+    @IBOutlet weak var reportTagsLabel: UILabel!
+    @IBOutlet weak var chestLabel: UILabel!
+    @IBOutlet weak var thighsLabel: UILabel!
+    @IBOutlet weak var waistLabel: UILabel!
+    @IBOutlet weak var bodyFatLabel: UILabel!
+    @IBOutlet weak var weightLabel: UILabel!
+    @IBOutlet weak var heightLabel: UILabel!
+    @IBOutlet weak var trackMeasurementsLabel: UILabel!
+    @IBOutlet weak var aerobicsBtn: UIButton!
+    @IBOutlet weak var fitBitSyncBtn: UIButton!
+    @IBOutlet weak var activityDateLabel: UILabel!
+    @IBOutlet weak var maxAFITTokenLabel: UILabel!
+    @IBOutlet weak var fullReportCardLabel: UILabel!
+    @IBOutlet weak var reportTitleLabel: UILabel!
+    @IBOutlet weak var helpmeFindPrivateKeyBtn: UIButton!
+    @IBOutlet weak var steemPrivateKeyLabel: UILabel!
+    @IBOutlet weak var steemUserNameLabel: UILabel!
     @IBOutlet weak var backBtn : UIButton!
     @IBOutlet weak var steemitUsernameTextField : AFTextField!
     @IBOutlet weak var steemitPostingPrivateKeyTextField : AFTextField!
     @IBOutlet weak var postTitleTextView : AFTextView!
     @IBOutlet weak var postTitleTextViewHeightConstraint : NSLayoutConstraint!
     @IBOutlet weak var activityCountLabel : UILabel!
+    @IBOutlet weak var activityCountValueLabel: UILabel!
     @IBOutlet weak var activityTypeLabel : UILabel!
     @IBOutlet weak var heightTextField : AFTextField!
     @IBOutlet weak var weightTextField : AFTextField!
@@ -43,6 +65,10 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     @IBOutlet weak var chestUnitLabel  : UILabel!
     @IBOutlet weak var markDownEditorHeight: NSLayoutConstraint!
     @IBOutlet weak var markDOwnView: UIView!
+    @IBOutlet weak var btnToday: UIButton!
+    @IBOutlet weak var btnYesterday: UIButton!
+    
+    
     var authenticationController: AuthenticationController?
     var isFitBitCount = false
     var fitBitStepCount = 0
@@ -57,6 +83,10 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     }()
     
     var defaultPostTitle = ""
+    var activityDate = ""
+    var activityDateToSave = Date()
+    var detailedActivityStepsDataString = ""
+    
     //MARK: VIEW LIFE CYCLE
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -66,29 +96,98 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
+        let userName = UserDefaults.standard.string(forKey: "currentUserName")
+        if userName  != nil{
+            self.steemitUsernameTextField.text = userName
+        }else{
+            self.steemitUsernameTextField.text = ""
+        }
+        let userPrivateKey = UserDefaults.standard.string(forKey: "currentUserPrivateKey")
+        if userPrivateKey  != nil{
+            self.steemitPostingPrivateKeyTextField.text = userPrivateKey
+        }else{
+            self.steemitPostingPrivateKeyTextField.text = ""
+        }
+        
+        
         AWSMobileClient.initialize()
         self.activityTypeLabel.text = ""
         self.defaultPostTitle = "\(Messages.default_post_title)\(todayDateStringWithFormat(format: "MMMM d yyyy"))"
         //show today activity steps count
-        if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
-            self.activityCountLabel.text = "\(activity.steps)"
-        }
+       // AppDelegate.todayStartDate()
+        let dd = Date().dayAfter()
+       /* if let activity = Activity.allWithoutCountZero().first(where: {$0.date ==  AppDelegate.todayStartDate()}) {
+            self.activityCountValueLabel.text = "\(activity.steps)"
+        }*/
         
-        //show current user steemit username and private posting key
-        if let currentUser = self.currentUser {
-            self.steemitUsernameTextField.text = currentUser.steemit_username
-            self.steemitPostingPrivateKeyTextField.text = currentUser.private_posting_key
-        }
+        for i in 0..<Activity.allWithoutCountZero().count{
+            
+//            if(Activity.allWithoutCountZero()[i].date.addingTimeInterval(-18000).dateString() == AppDelegate.todayStartDate().addingTimeInterval(-18000).dateString() ){
+//                       self.activityCountValueLabel.text = "\(Activity.allWithoutCountZero()[i].steps)"
+//                        self.activityDate = AppDelegate.todayStartDate().addingTimeInterval(-18000).dateString()
+//                   }
+            
+            if let activity = Activity.allWithoutCountZero().first(where: {resetTime(date: $0.date)  ==  resetTime(date: AppDelegate.todayStartDate())}) {
+                self.activityCountValueLabel.text = "\(activity.steps)"
+                self.activityDate = AppDelegate.todayStartDate().dateString()
+                self.activityDateToSave = AppDelegate.todayStartDate()
+                self.makeTodayAllEnteriesAsDetailedActivityString()
+            }
+            
+            
+               }
+        
         
         self.applyFinishingTouchToUIElements()
         
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(appMovedToForeground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(self.toDayStepsUpdated(notification:)), name: NSNotification.Name.init(StepsUpdatedNotification), object: nil)
+       // notificationCenter.addObserver(self, selector: #selector(self.toDayStepsUpdated(notification:)), name: NSNotification.Name.init(StepsUpdatedNotification), object: nil)
         let content = UserDefaults.standard.string(forKey: "postcontent") ?? ""
         postContentTextView.text = content
+        //postContentTextView.text = "5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe"
+        
+        
+        
         setUpMarkDownView()
         updateMarkDownView()
+        btnToday.setImage( UIImage.init(named: "radioSelected"), for: .normal)
+        // activityDate = dateformat(date: Date())
+        print(activityDate)
+        setupInitials()
+    }
+    
+    func setupInitials()
+    {
+        steemUserNameLabel.text              = "steem_username_lbl".localized()
+        steemPrivateKeyLabel.text            = "steem_pvt_posting_key".localized()
+       // helpmeFindPrivateKeyBtn.titleLabel!.text              = "steem_username_lbl".localized()
+        reportTitleLabel.text                = "report_title".localized()
+        fullReportCardLabel.text             = "full_report_AFIT_pay".localized()
+        maxAFITTokenLabel.text               = "full_AFIT_checkbox".localized()
+        activityCountLabel.text              = "activity_count_lbl".localized()
+       // fitBitSyncBtn.titleLabel!.text       = "fitbit_sync_btn_lbl".localized()
+        activityTypeLabel.text               = "activity_type_lbl".localized()
+        trackMeasurementsLabel.text          = "track_measurements_lbl".localized()
+        heightLabel.text                     = "height_lbl".localized()
+        weightLabel.text                     = "weight_lbl".localized()
+        bodyFatLabel.text                    = "body_fat_lbl".localized()
+        waistLabel.text                      = "waist_size_lbl".localized()
+        thighsLabel.text                     = "thighs_size_lbl".localized()
+        chestLabel.text                      = "chest_size_lbl".localized()
+        reportTitleLabel.text                = "report_tags_lbl".localized()
+        reportImagesLabel.text               = "report_images_lbl".localized()
+       // insertImageBtn.titleLabel!.text      = "insert_img_btn_lbl".localized()
+        postContentLabel.text                = "report_content_lbl".localized()
+        markdownContentLabel.text            = "markdown_content_note".localized()
+        
+        self.fitBitSyncBtn.setTitle("fitbit_sync_btn_lbl".localized(), for: .normal)
+        self.insertImageBtn.setTitle("insert_img_btn_lbl".localized(), for: .normal)
+        self.postToSteemitBtn.setTitle("post_to_steem_btn_txt".localized(), for: .normal)
+
+        
+        
     }
     
     func setUpMarkDownView() {
@@ -146,13 +245,13 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
                                              contentType: "image/jpeg",
                                              expression: expression,
                                              completionHandler: completionHandler).continueWith {
-                                                (task) -> AnyObject! in
+                                                (task) -> AnyObject? in
                                                 if let error = task.error {
                                                     print("Error: \(error.localizedDescription)")
                                                 }
                                                 
                                                 if let _ = task.result {
-                                                    print(task.result?.status)
+                                                    print(task.result?.status as Any)
                                                     
                                                 }
                                                 return nil;
@@ -170,10 +269,124 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
             }
         }
     }
+    
+    //Date format
+    func dateformat(date:Date)  -> String  {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = NSLocale.current
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        var tempLabel = dateFormatter.string(from: date)
+        tempLabel   =  tempLabel.replacingOccurrences(of: "-", with: "")
+        return tempLabel
+    }
+    
+    
+    func makeTodayAllEnteriesAsDetailedActivityString()
+    {
+        self.detailedActivityStepsDataString = ""
+        let dataList = ActivityFifteenMinutesInterval.all().filter({$0.steps != 0})
+        for activity in dataList{
+            let timeSlot = activity.interval.replacingOccurrences(of: ":", with: "")
+            let stepsInTimeSlot = String(activity.steps)
+            self.detailedActivityStepsDataString += timeSlot + stepsInTimeSlot + "|"
+        }
+        print(detailedActivityStepsDataString)
+    }
+    
+    
+    func makeYesterdayAllEntriesAsDetailedActivityString()
+    {
+        self.detailedActivityStepsDataString = ""
+        let date = resetTime(date: AppDelegate.todayStartDate().addingTimeInterval(-60*60*24))
+        let allsavedRecordsOfHistory = AllRecordsOfActivitiesNew.all()
+        let selectedDateHistory = allsavedRecordsOfHistory.filter({$0.date == date.dateString()})
+        var activitiesDataList : [ActivityFifteenMinutesInterval] = []
+        if selectedDateHistory.count > 0{
+            if let anArrayOfPersonsRetrieved = NSKeyedUnarchiver.unarchiveObject(with: selectedDateHistory[0].activitiesListData) as? [ActivityFifteenMinutesInterval] {
+                for activityObj in anArrayOfPersonsRetrieved{
+                    let activity = ActivityFifteenMinutesInterval()
+                    activity.id = Int(activityObj.idInString) ?? 0
+                    activity.date = activityObj.date
+                    activity.interval = activityObj.interval
+                    activity.steps = Int(activityObj.stepsInString) ?? 0
+                    if activity.steps > 0{
+                        activitiesDataList.append(activity)
+                    }
+                }
+                for activity in activitiesDataList{
+                    let timeSlot = activity.interval.replacingOccurrences(of: ":", with: "")
+                    let stepsInTimeSlot = String(activity.steps)
+                    self.detailedActivityStepsDataString += timeSlot + stepsInTimeSlot + "|"
+                }
+            }
+        }
+    }
+    
+    
+    
     //MARK: INTERFACE BUILDER ACTIONS
     
     @IBAction func backBtnAction(_ sender : UIButton) {
         self.navigationController?.popViewController(animated: true)
+    }
+    
+    @IBAction func btnToday(_ sender : UIButton)
+    {
+        btnToday.setImage( UIImage.init(named: "radioSelected"), for: .normal)
+        btnYesterday.setImage( UIImage.init(named: "radioOff"), for: .normal)
+        //activityDate = dateformat(date: Date())
+        self.activityCountValueLabel.text = "0"
+        
+        for i in 0..<Activity.allWithoutCountZero().count{
+           
+            //           if(Activity.allWithoutCountZero()[i].date.addingTimeInterval(-18000).dateString() == AppDelegate.todayStartDate().addingTimeInterval(-18000).dateString() ){
+            //                    self.activityCountValueLabel.text = "\(Activity.allWithoutCountZero()[i].steps)"
+            //                    self.activityDate = AppDelegate.todayStartDate().addingTimeInterval(-18000).dateString()
+            //                }
+            //        }
+            
+            if let activity = Activity.allWithoutCountZero().first(where: {resetTime(date: $0.date)  ==  resetTime(date: AppDelegate.todayStartDate())}) {
+                self.activityCountValueLabel.text = "\(activity.steps)"
+                self.activityDate = AppDelegate.todayStartDate().dateString()
+                self.activityDateToSave = AppDelegate.todayStartDate()
+                self.makeTodayAllEnteriesAsDetailedActivityString()
+            }
+        }
+        
+    }
+    
+    @IBAction func btnYesterday(_ sender : UIButton) {
+        btnToday.setImage( UIImage.init(named: "radioOff"), for: .normal)
+        btnYesterday.setImage( UIImage.init(named: "radioSelected"), for: .normal)
+        //activityDate = dateformat(date: Date().dayBefor())
+        
+       // let date2 = Date().addingTimeInterval(-60*60*24)
+        
+      /*  if let activity = Activity.allWithoutCountZero().first(where: {resetTime(date: $0.date.addingTimeInterval(-60*60*24)) ==  resetTime(date: AppDelegate.todayStartDate().addingTimeInterval(-60*60*24))}) {
+        self.activityCountValueLabel.text = "\(activity.steps)"
+            
+        }*/
+        self.activityCountValueLabel.text = "0"
+
+        
+        for i in 0..<Activity.allWithoutCountZero().count{
+            
+//            if(Activity.allWithoutCountZero()[i].date.addingTimeInterval(-18000).dateString() == AppDelegate.todayStartDate().addingTimeInterval(-18000).addingTimeInterval(-60*60*24).dateString() ){
+//                    self.activityCountValueLabel.text = "\(Activity.allWithoutCountZero()[i].steps)"
+//                self.activityDate = AppDelegate.todayStartDate().addingTimeInterval(-18000).addingTimeInterval(-60*60*24).dateString()
+//                }
+//            }
+            
+            
+            if(resetTime(date: Activity.allWithoutCountZero()[i].date) == resetTime(date: AppDelegate.todayStartDate().addingTimeInterval(-60*60*24)) ){
+                self.activityCountValueLabel.text = "\(Activity.allWithoutCountZero()[i].steps)"
+                self.activityDate = AppDelegate.todayStartDate().yesterday.dateString()
+                self.activityDateToSave = AppDelegate.todayStartDate().yesterday
+                self.makeYesterdayAllEntriesAsDetailedActivityString()
+            }
+        
+        }
+        
     }
     
     @IBAction func activityTypeBtnAction(_ sender : UIButton) {
@@ -218,6 +431,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         //save user steemit credentials privately in local database
         self.saveOrUpdateUserCredentials()
         
+        
         //settings default measurement system to metric
         var isDonatingToCharity = false
         var charityDisplayName = ""
@@ -249,23 +463,36 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         }
     }
     
+    func resetTime(date: Date) -> Date{
+        let currentDate = date.setTime(hour: 00, min: 00, sec: 00)!
+       // let newDate = currentDate
+       // let timezoneOffset =  TimeZone.current.secondsFromGMT()
+       // let epochDate = newDate.timeIntervalSince1970
+        //let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
+       // currentDate = Date(timeIntervalSince1970: timezoneEpochOffset)
+        return currentDate
+    }
+    
     func proceeedPostingWith(json : [String : Any]) {
         var activityJson = json
+        
         
         // check minimum steps count required to post the activity
         var stepsCount = 0
         if isFitBitCount {
             stepsCount = fitBitStepCount
             activityJson[PostKeys.dataTrackingSource] = "Fitbit Tracking"
-        }else if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
-            stepsCount = activity.steps
+            
+        }else if let activity = Activity.allWithoutCountZero().first(where: {resetTime(date: $0.date) == resetTime(date: AppDelegate.todayStartDate())}){//else if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
+//            stepsCount = activity.steps
+            stepsCount = Int(self.activityCountValueLabel.text ?? "0") ?? 0
             activityJson[PostKeys.dataTrackingSource] = "Device Tracking"
         }
         
-        if stepsCount < PostMinActivityStepsCount {
+       /* if stepsCount < PostMinActivityStepsCount {
             self.showAlertWith(title: nil, message: Messages.min_activity_steps_count_error + "\(PostMinActivityStepsCount) " + "activity yet.")
             return
-        }
+        }*/
         
         let contentText = (self.postContentTextView.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         if contentText.count < PostContentMinCharsCount {
@@ -274,12 +501,16 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         }
         
         //check is user has not selected any activity from the dropdown
-        if let selectedActivityTypes = self.activityTypeLabel.text {
-            if selectedActivityTypes.isEmpty {
-                self.showAlertWith(title: nil, message: Messages.error_need_select_one_activity )
-                return
-            }
+        
+        var activityType = self.activityTypeLabel.text?.replacingOccurrences(of: "Activity Type,", with: "") ?? ""
+        activityType = activityType.replacingOccurrences(of: "Activity Type", with: "")
+        
+        if activityType == "" {
+            self.showAlertWith(title: nil, message: Messages.error_need_select_one_activity )
+            return
         }
+        
+        
         let userName = (self.steemitUsernameTextField.text ?? "").byTrimming(string: "@").lowercased()
         let privatePostingKey = self.steemitPostingPrivateKeyTextField.text ?? ""
         activityJson[PostKeys.author] = userName
@@ -288,25 +519,37 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         activityJson[PostKeys.content] = self.postContentTextView.text
         activityJson[PostKeys.tags] = self.tagsString()
         activityJson[PostKeys.step_count] = stepsCount
-        activityJson[PostKeys.activity_type] = self.activityTypeLabel.text ?? ""
+        
+        activityJson[PostKeys.activity_type] = activityType
         activityJson[PostKeys.height] = self.heightTextField.text ?? ""
         activityJson[PostKeys.weight] = self.weightTextField.text ?? ""
-        activityJson[PostKeys.chest] = self.chestTextField.text ?? ""
-        activityJson[PostKeys.waist] = self.waistTextField.text ?? ""
-        activityJson[PostKeys.thigs] = self.thighTextField.text ?? ""
+        activityJson[PostKeys.chest] =  self.chestTextField.text ?? ""
+        activityJson[PostKeys.waist] =  self.waistTextField.text ?? ""
+        activityJson[PostKeys.thigs] =  self.thighTextField.text ?? ""
         activityJson[PostKeys.bodyfat] = self.bodyFatTextField.text ?? ""
+        activityJson[PostKeys.activityDate] = self.activityDate.replacingOccurrences(of: "-", with: "")
+        activityJson[PostKeys.detailedActivity] = self.detailedActivityStepsDataString
         
         if isMaxiToken{
             activityJson[PostKeys.fullafitpay] = "on"
         }
-        var isSBDPayment = false
+        //var isSBDPayment = false
         
-        if let settings = self.settings {
-            isSBDPayment = settings.isSbdSPPaySystemSelected
-        }
-        if !isSBDPayment{
-            activityJson[PostKeys.reportSTEEMPayMode] = "full_SP_Pay"
-        }
+        
+            let status = UserDefaults.standard.bool(forKey: "isSbdSPPaySystemSelected")
+            if status{
+                activityJson[PostKeys.reportSTEEMPayMode] = "full_SP_Pay"
+            }else{
+                activityJson[PostKeys.reportSTEEMPayMode] = "half_SP_Pay"
+            }
+        
+        
+//        if !isSBDPayment{
+//            activityJson[PostKeys.reportSTEEMPayMode] = "half_SP_Pay"
+//        }else{
+//            activityJson[PostKeys.reportSTEEMPayMode] = "full_SP_Pay"
+//        }
+        
         activityJson[PostKeys.actifitUserID] = UserDefaults.standard.string(forKey: "actifitUserID") ?? ""
         activityJson[PostKeys.weightUnit] = self.weightUnitLabel.text!
         activityJson[PostKeys.heightUnit] = self.heightUnitLabel.text!
@@ -315,7 +558,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         activityJson[PostKeys.thighsUnit] = self.thighsUnitLabel.text!
         
         activityJson[PostKeys.appType] = AppType
-        activityJson[PostKeys.appVersion] = CurrentAppVersion
+        activityJson[PostKeys.appVersion] = UIApplication.appVersion
         self.postActvityWith(json: activityJson)
     }
     
@@ -336,6 +579,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         authenticationController = AuthenticationController(delegate: self)
         authenticationController?.login(fromParentViewController: self)
     }
+    
     @IBAction func videoBtn(_ sender: Any) {
         let url = URL(string: "https://d.tube/#!/v/raserrano/h7rze7he")!
         let controller = SFSafariViewController(url: url)
@@ -415,9 +659,13 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         let userName = (self.steemitUsernameTextField.text ?? "").byTrimming(string: "@").lowercased()
         let privatePostingKey = self.steemitPostingPrivateKeyTextField.text ?? ""
         
+        UserDefaults.standard.set(userName, forKey: "currentUserName")
+        UserDefaults.standard.set(privatePostingKey, forKey: "currentUserPrivateKey")
+        UserDefaults.standard.synchronize()
+        
         if let currentUser = self.currentUser {
             //update user saved username and private posting key
-            if self.currentUser?.steemit_username != userName{
+            if let user = self.currentUser, user.steemit_username != userName{
                 UserDefaults.standard.set(nil, forKey:"rank")
             }
             currentUser.updateUser(steemit_username: userName, private_posting_key: privatePostingKey, last_post_date : currentUser.last_post_date)
@@ -426,6 +674,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
             User.saveWith(info: [UserKeys.steemit_username : userName, UserKeys.private_posting_key : privatePostingKey, UserKeys.last_post_date : Date().yesterday]) //save user last post date atleat before today because if the post fails, the user can atlease post next time today.
         }
         self.currentUser = User.current()
+        UserDefaults.standard.set(self.steemitUsernameTextField.text, forKey: "username")
     }
     
     func todayDateStringWithFormat(format : String) -> String {
@@ -437,7 +686,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     
     @objc func appMovedToForeground() {
         if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
-            self.activityCountLabel.text = "\(activity.steps)"
+            //self.activityCountValueLabel.text = "\(activity.steps)"
         }
         self.defaultPostTitle = "\(Messages.default_post_title)\(todayDateStringWithFormat(format: "MMMM d yyyy"))"
     }
@@ -445,7 +694,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     @objc func toDayStepsUpdated(notification : NSNotification) {
         if let userInfo = notification.userInfo {
             if let steps = userInfo["steps"] as? Int {
-                self.activityCountLabel.text = "\(steps)"
+                self.activityCountValueLabel.text = "\(steps)"
             }
         }
     }
@@ -465,7 +714,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
                         //update user last post time interval
                         UserDefaults.standard.set("", forKey: "postcontent")
                         if let currentUser =  User.current() {
-                            currentUser.updateUser(steemit_username: currentUser.steemit_username, private_posting_key: currentUser.private_posting_key, last_post_date: Date())
+                            currentUser.updateUser(steemit_username: currentUser.steemit_username, private_posting_key: currentUser.private_posting_key, last_post_date: self?.activityDateToSave ?? Date())
                             
                         }
                         self?.showAlertWithOkCompletion(title: nil, message: Messages.success_post, okClickedCompletion: { (COM) in
@@ -504,12 +753,13 @@ extension PostToSteemitVC: AuthenticationProtocol{
             return
         }
         FitbitAPI.sharedInstance.authorize(with: authToken)
-        let _ = StepStat.fetchTodaysStepStat() { [weak self] stepStat, error in
+        let _ = StepStat.fetchTodaysStepStat(forDate: self.activityDateToSave) { [weak self] stepStat, error in
             let steps = stepStat?.steps ?? 0
             print(steps)
             self?.isFitBitCount = true
             self?.fitBitStepCount = Int(steps)
-            self?.activityCountLabel.text = "\(steps)"
+            self?.activityCountValueLabel.text = "\(steps)"
+            
         }
         var fetchMeasurments = false
         
