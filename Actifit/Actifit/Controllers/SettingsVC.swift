@@ -7,9 +7,40 @@
 //
 
 import UIKit
+import DropDown
+import Localizr_swift
 
 class SettingsVC: UIViewController {
 
+    
+    @IBOutlet weak var settingsLabel: UILabel!
+    @IBOutlet weak var activityDataSource: UILabel!
+    @IBOutlet weak var phoneSensorLabel: UILabel!
+    @IBOutlet weak var fitBitLabel: UILabel!
+    @IBOutlet weak var fitBitSettingHeadingLabel: UILabel!
+    @IBOutlet weak var fetchMeasurementLabel: UILabel!
+    @IBOutlet weak var fetchStepsLabel: UILabel!
+    @IBOutlet weak var steemPostPayoutLabel: UILabel!
+    @IBOutlet weak var fiftyPercentLabel: UILabel!
+    @IBOutlet weak var hundredPercentLabel: UILabel!
+    @IBOutlet weak var languageTitleLabel: UILabel!
+    @IBOutlet weak var measurementSystemTitleLabel: UILabel!
+    @IBOutlet weak var metricLabel: UILabel!
+    @IBOutlet weak var USLabel: UILabel!
+    @IBOutlet weak var donateToCharityLabel: UILabel!
+    @IBOutlet weak var donateRewardToCharity: UILabel!
+    @IBOutlet weak var availabelCharitiesLabel: UILabel!
+    @IBOutlet weak var charityInfo: UILabel!
+    @IBOutlet weak var dailyReminderPost: UILabel!
+    @IBOutlet weak var remindMeToPostLabel: UILabel!
+    @IBOutlet weak var versionLabel: UILabel!
+    @IBOutlet weak var saveSettings: UIButton!
+    
+    
+    
+    @IBOutlet weak var mainContainerInScrollViewHeightConstraint: NSLayoutConstraint!
+    
+    @IBOutlet weak var languageButton: UIButton!
     @IBOutlet weak var backBtn : UIButton!
     @IBOutlet weak var metricMeasurementSystemBtn : UIButton!
     @IBOutlet weak var USMeasurementSystemBtn : UIButton!
@@ -31,6 +62,8 @@ class SettingsVC: UIViewController {
     @IBOutlet weak var charityLinkTextView : UITextView!
     @IBOutlet weak var saveSettingsBtn : UIButton!
     @IBOutlet weak var showCharityBtn : UIButton!
+    
+    @IBOutlet weak var lblVersion : UILabel!
     
     @IBOutlet weak var metricMeasurementSystemBtnDotViewWidthConstraint : NSLayoutConstraint!
     @IBOutlet weak var metricMeasurementSystemBtnDotViewHeightConstraint : NSLayoutConstraint!
@@ -64,7 +97,9 @@ class SettingsVC: UIViewController {
     var charities = [Charity]()
     var charityName = ""
     var charityDisplayName = ""
-
+    let dropDown                                    = DropDown()
+    var selectedIndex = 0
+    
     //MARK: VIEW LIFE CYCLE
     
     lazy var settings = {
@@ -77,8 +112,15 @@ class SettingsVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.loadCharities()
         
+        
+        let selectedLanguage = UserDefaults.standard.string(forKey: "SelectedLanguage")
+        if selectedLanguage  != nil{
+            self.languageButton.setTitle(selectedLanguage, for: .normal)
+        }
+        
+        self.loadCharities()
+        lblVersion.text = "Actifit App Version:" + UIApplication.appVersion!
         isReminderSelected = UserDefaults.standard.bool(forKey: "isReminderSelected")
         if let settings = self.settings {
             self.isMetricSystemSelected = settings.measurementSystem == MeasurementSystem.metric.rawValue
@@ -93,11 +135,109 @@ class SettingsVC: UIViewController {
                self.setTextViewLinkString()
             }
             self.showCharityBtn.setTitle(self.charityDisplayName, for: .normal)
+        }else {
+            isSbdSPPaySystemSelected = true
         }
         self.applyFinihingTouchToUIElements()
+        self.setDropDown()
+        self.setupInitials()
+        saveSettingsBtn.contentHorizontalAlignment = .center
+        mainContainerInScrollViewHeightConstraint.constant = 770
+    }
+    
+    
+    func setupInitials()
+    {
+        settingsLabel.text                  = "settings_title".localized()
+        activityDataSource.text             = "activity_source_lbl".localized()
+        phoneSensorLabel.text               = "device_sensors_option_lbl".localized()
+        fitBitLabel.text                    = "fitbit_option_lbl".localized()
+        fitBitSettingHeadingLabel.text      = "fitbit_settings_lbl".localized()
+        fetchMeasurementLabel.text          = "fitbit_measurements_lbl".localized()
+        fetchStepsLabel.text                = "fitbit_fetch_steps".localized()
+        steemPostPayoutLabel.text           = "steem_post_payout".localized()
+        fiftyPercentLabel.text              = "pay_option_50_50".localized()
+        hundredPercentLabel.text            = "pay_option_full_sp".localized()
+        languageTitleLabel.text             = "Language".localized()
+        measurementSystemTitleLabel.text    = "measure_system_lbl".localized()
+        metricLabel.text                    = "metric_system_option_lbl".localized()
+        USLabel.text                        = "us_system_option_lbl".localized()
+        donateToCharityLabel.text           = "donate_charity_lbl".localized()
+        donateRewardToCharity.text          = "donate_charity_checkbox".localized()
+        availabelCharitiesLabel.text        = "charity_options_lbl".localized()
+        charityInfo.text                    = "charity_info_lbl".localized()
+        dailyReminderPost.text              = "daily_post_reminder_lbl".localized()
+        remindMeToPostLabel.text            = "post_reminder_checkbox".localized()
+        versionLabel.text                   = "app_version_string".localized() + " " + UIApplication.appVersion!
+        saveSettingsBtn.titleLabel!.text    = "save_settings_btn_lbl".localized()
+    }
+    
+  
+    
+    fileprivate func updateLanguage(_ index: Int) {
+        if index == 0{
+            Localizr.update(locale: "en")
+        }
+        
+        if index == 1{
+            Localizr.update(locale: "pt-PT")
+        }
+        
+        if index == 2{
+            Localizr.update(locale: "ko")
+        }
+        if index == 3{
+            Localizr.update(locale: "ar")
+            L102Language.setAppleLAnguageTo(lang: "ar")
+            UIView.appearance().semanticContentAttribute = .forceRightToLeft
+            
+            
+        }else{
+            L102Language.setAppleLAnguageTo(lang: "en")
+            UIView.appearance().semanticContentAttribute = .forceLeftToRight
+                       
+        }
+        if index == 4{
+            Localizr.update(locale: "yo")
+        }
+        if index == 5{
+            Localizr.update(locale: "nl")
+        }
+        if index == 6{
+            Localizr.update(locale: "hi")
+        }
+        if index == 7{
+            Localizr.update(locale: "it")
+        }
+        if index == 8{
+            Localizr.update(locale: "de")
+        }
+        self.setupInitials()
+        
+    }
+    
+    func setDropDown()
+    {
+        dropDown.anchorView = self.languageButton
+        dropDown.dataSource = ["English", "Portuguesa", "한국어", "العربية", "Yoruba", "Nederlands" , "हिंदी", "Italiano" , "Deutsche"]
+        dropDown.selectionAction = { [unowned self] (index: Int, item: String) in
+            self.selectedIndex = index
+            
+            self.languageButton.setTitle(item, for: .normal)
+        }
+        dropDown.width = self.languageButton.bounds.width
+        dropDown.bottomOffset = CGPoint(x: 0, y:(dropDown.anchorView?.plainView.bounds.height)!)
+        dropDown.direction = .bottom
+        dropDown.backgroundColor = UIColor.white
+        
     }
     
     //MARK: INTERFACE BUILDER ACTIONS
+    
+    @IBAction func languageButtonAction(_ sender: Any) {
+        self.dropDown.show()
+    }
+    
     
     @IBAction func backBtnAction(_ sender : UIButton) {
         self.navigationController?.popViewController(animated: true)
@@ -133,12 +273,14 @@ class SettingsVC: UIViewController {
         self.isSbdSPPaySystemSelected = true
         self.selectsbdSPPaySystem(select: true)
         self.selectfullPaySystem(select: false)
+        UserDefaults.standard.set(false, forKey: "isSbdSPPaySystemSelected")
     }
     
     @IBAction func fullSPaySystemBtnAction(_ sender : UIButton) {
         self.isSbdSPPaySystemSelected = false
         self.selectsbdSPPaySystem(select: false)
         self.selectfullPaySystem(select: true)
+        UserDefaults.standard.set(true, forKey: "isSbdSPPaySystemSelected")
     }
     
     @IBAction func donateTopCharityBtnAction(_ sender : UIButton) {
@@ -217,11 +359,14 @@ class SettingsVC: UIViewController {
     
     @IBAction func saveSettingsBtnAction(_ sender : UIButton) {
         //metric system
+        self.updateLanguage(self.selectedIndex)
+        UserDefaults.standard.set(self.languageButton.titleLabel?.text ?? "English", forKey: "SelectedLanguage")
         UserDefaults.standard.set(!isDeviceSensorSystemSelected, forKey: "isFitSystemSelected")
+        UserDefaults.standard.synchronize()
         if let settings = self.settings {
-            settings.update(measurementSystem: self.isMetricSystemSelected ? .metric : .us, isDonatingCharity: self.isDonateToCharitySelected, charityName: charityName, charityDisplayName: charityDisplayName, isDeviceSensorSystemSelected: self.isDeviceSensorSystemSelected,isSbdSPPaySystemSelected: self.isSbdSPPaySystemSelected,isReminderSelected: self.isReminderSelected, fitBitMeasurement: self.fitBitMeasurement)
+            settings.update(measurementSystem: self.isMetricSystemSelected ? .metric : .us, isDonatingCharity: self.isDonateToCharitySelected, charityName: charityName, charityDisplayName: charityDisplayName, isDeviceSensorSystemSelected: self.isDeviceSensorSystemSelected,isSbdSPPaySystemSelected: self.isSbdSPPaySystemSelected,isReminderSelected: self.isReminderSelected, fitBitMeasurement: self.fitBitMeasurement, appVersion: UIApplication.appVersion!)
         } else {
-            Settings.saveWith(info: [SettingsKeys.measurementSystem : (self.isMetricSystemSelected ? MeasurementSystem.metric.rawValue : MeasurementSystem.us.rawValue), SettingsKeys.isDonatingCharity : false, SettingsKeys.charityName :  charityName, SettingsKeys.charityDisplayName : charityDisplayName, SettingsKeys.datasource: isDeviceSensorSystemSelected, SettingsKeys.postpayout : isSbdSPPaySystemSelected, SettingsKeys.reminder : isReminderSelected, SettingsKeys.fitBitMeasurement : fitBitMeasurement])
+            Settings.saveWith(info: [SettingsKeys.measurementSystem : (self.isMetricSystemSelected ? MeasurementSystem.metric.rawValue : MeasurementSystem.us.rawValue), SettingsKeys.isDonatingCharity : false, SettingsKeys.charityName :  charityName, SettingsKeys.charityDisplayName : charityDisplayName, SettingsKeys.datasource: isDeviceSensorSystemSelected, SettingsKeys.postpayout : isSbdSPPaySystemSelected, SettingsKeys.reminder : isReminderSelected, SettingsKeys.fitBitMeasurement : fitBitMeasurement,SettingsKeys.AppVersion:UIApplication.appVersion!])
         }
         
         self.showAlertWithOkCompletion(title: nil, message: "Settings has been saved") { (cl) in
@@ -387,6 +532,10 @@ class SettingsVC: UIViewController {
     }
     
     func selectDeviceSensorSystem(select : Bool) {
+        if select{
+            mainContainerInScrollViewHeightConstraint.constant = 770
+        }
+        
         self.deviceSensortSystemBtn.layer.borderColor = select ? ColorTheme.cgColor : UIColor.darkGray.cgColor
         self.deviceSensortSystemBtn.layer.borderWidth = 2.0
         self.deviceSensorSystemBtnDotViewWidthConstraint.constant = select ? 10 : 0.0
@@ -395,6 +544,10 @@ class SettingsVC: UIViewController {
     }
     
     func selectFitBitSystem(select : Bool) {
+        if select{
+                mainContainerInScrollViewHeightConstraint.constant = 870
+        }
+        
         self.fitBitSystemBtn.layer.borderColor = select ? ColorTheme.cgColor : UIColor.darkGray.cgColor
         self.fitBitSystemBtn.layer.borderWidth = 2.0
         self.fitBitSystemBtnDotViewHeightConstraint.constant = select ? 10 : 0.0
@@ -472,3 +625,5 @@ extension Date
     }
     
 }
+
+
