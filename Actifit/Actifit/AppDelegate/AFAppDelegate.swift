@@ -10,39 +10,69 @@ import UIKit
 import RealmSwift
 import IQKeyboardManagerSwift
 import Fabric
+import Firebase
 import Crashlytics
+import UserNotifications
+import DropDown
+import Localizr_swift
 
 @UIApplicationMain
 class AFAppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    let notificationCenter = UNUserNotificationCenter.current()
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 
         //Enabling IBKeyboardManager to handle keyboard for textfields and textviews
-        Fabric.with([Crashlytics.self])
+        //Fabric.with([Crashlytics.self])
+        
+        if UserDefaults.standard.string(forKey: "SelectedLanguage") == nil {
+            Localizr.update(locale: "en")
+        }
+        //Localizr.update(locale: "en")
+        FirebaseApp.configure()
         IQKeyboardManager.shared.enable = true
-        application.registerUserNotificationSettings(UIUserNotificationSettings(types: UIUserNotificationType(rawValue: UIUserNotificationType.sound.rawValue | UIUserNotificationType.badge.rawValue | UIUserNotificationType.alert.rawValue), categories: nil))
+        DropDown.startListeningToKeyboard()
+        registerForPushNotifications()
         UIApplication.shared.applicationIconBadgeNumber = 0
 
         let config = Realm.Configuration(
-            schemaVersion: 6,
+            schemaVersion: 7,
             migrationBlock: { migration, oldSchemaVersion in
-                if (oldSchemaVersion < 5) {
+                if (oldSchemaVersion < 6) {
                     migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
                         newObject!["isDeviceSensorSystemSelected"] = true
                         newObject!["isSbdSPPaySystemSelected"] = true
                         newObject!["isReminderSelected"] = false
                         newObject!["fitBitMeasurement"] = false
+                        newObject!["appVersion"] = UIApplication.appVersion!
+
                     }
                 }
         })
         Realm.Configuration.defaultConfiguration = config
         do {
-            let realm =  try Realm()
+            let realm =  try Realm.init(configuration: config)
+            print(realm)
         } catch {
-            
+            print("error")
         }
+        
+        
+        notificationCenter.delegate = self
+        
+        let options: UNAuthorizationOptions = [.alert, .sound, .badge]
+        
+        notificationCenter.requestAuthorization(options: options) {
+            (didAllow, error) in
+            if !didAllow {
+                print("User has declined notifications")
+            }
+        }
+        
+        
+        
         return true
     }
 
@@ -80,22 +110,26 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
     
     func defaultRealm() -> Realm? {
         var config = Realm.Configuration.defaultConfiguration
-        config.schemaVersion = CurrentRealmSchemaVersion
+        config.schemaVersion =  7 //CurrentRealmSchemaVersion
         config.migrationBlock = { (migration, oldSchemaVersion) in
-            if (oldSchemaVersion < 4) {
+
                 migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
                     newObject!["isDeviceSensorSystemSelected"] = true
                     newObject!["isSbdSPPaySystemSelected"] = true
                     newObject!["isReminderSelected"] = false
+                    newObject!["fitBitMeasurement"] = false
+                    newObject!["appVersion"] = UIApplication.appVersion!
                 }
-            }
+
         }
         do {
+            Realm.Configuration.defaultConfiguration = config
             let realm =  try Realm.init(configuration: config)
             return realm
         } catch {
             print("error")
         }
+
         return nil
     }
     
@@ -108,7 +142,32 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         calendar.timeZone = NSTimeZone.local
         let dateAtMidnight = calendar.startOfDay(for: Date())
         return dateAtMidnight
+    
+//        let currentDate = Date()
+//        let timezoneOffset =  TimeZone.current.secondsFromGMT()
+//        let epochDate = currentDate.timeIntervalSince1970
+//        let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
+//        let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
+//        return timeZoneOffsetDate
+        
+       
+        
     }
+    
+    func yesterdayStartDate() -> Date {
+       
+            let currentDate = Date()
+            let timezoneOffset =  TimeZone.current.secondsFromGMT()
+            let epochDate = currentDate.timeIntervalSince1970
+            let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
+            let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
+            return timeZoneOffsetDate
+        
+        
+    }
+            
+    
+    
     
     func startDateFor(date : Date) -> Date {
         //For Start Date
@@ -116,6 +175,14 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         calendar.timeZone = NSTimeZone.local
         let dateAtMidnight = calendar.startOfDay(for: date)
         return dateAtMidnight
+        
+//        let currentDate = date //Date()
+//        let timezoneOffset =  TimeZone.current.secondsFromGMT()
+//        let epochDate = currentDate.timeIntervalSince1970
+//        let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
+//        let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
+//        return timeZoneOffsetDate
+        
     }
     
     func todayLocalDate() -> Date {
@@ -138,3 +205,132 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
+extension AFAppDelegate:MessagingDelegate{
+    
+    func registerForPushNotifications() {
+        UNUserNotificationCenter.current() // 1
+            .requestAuthorization(options: [.alert, .sound, .badge]) { // 2
+                granted, error in
+                print("Permission granted: \(granted)") // 3
+                guard granted else { return }
+                self.getNotificationSettings()
+        }
+    }
+    
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+        ) {
+        let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+        let token = tokenParts.joined()
+        // UserDefaults.standard.set("\(token)", forKey: HCConstants.DeviceTokan)
+        Messaging.messaging().apnsToken = deviceToken
+        let str =  Messaging.messaging().fcmToken
+        print("Device Token: \(token)")
+       // UserdefaultStore.USERDEFAULTS_SET_STRING_KEY(object: str!, key: "DeviceToken")
+    }
+    
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register: \(error)")
+    }
+    
+    func getNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            print("Notification settings: \(settings)")
+            guard settings.authorizationStatus == .authorized else { return }
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
+    }
+    
+    
+    
+    // This method will be called when app received push notifications in foreground
+//    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+//
+//            completionHandler([.alert, .badge, .sound])
+//
+ //       }
+    
+    
+    
+    
+    // This method is called when user CLICKED on the notification
+//    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void)
+//    {
+//
+//        let userInfo = response.notification.request.content.userInfo
+//        let sender_user_id = userInfo["sender_user_id"] as! String
+//
+//        print("Local Notification Received")
+//        completionHandler()
+//    }
+//
+    
+    func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
+            NSLog("hello")
+    }
+    
+    
+}
+
+
+
+
+extension AFAppDelegate: UNUserNotificationCenterDelegate {
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        
+        completionHandler([.alert, .sound])
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        
+        if response.notification.request.identifier == "Local Notification" {
+            print("Handling notifications with the Local Notification Identifier")
+        }
+        
+        completionHandler()
+    }
+    
+    func scheduleNotification(steps: Int) {
+        
+        let content = UNMutableNotificationContent() // Содержимое уведомления
+        let categoryIdentifire = "Delete Notification Type"
+        
+        content.title = "Actifit"
+        if steps == 5{
+                content.body = "Congrats On Reaching \(steps)K Milestone. Keep Going!"
+        }else{
+            content.body = "Congrats On Reaching \(steps)K Milestone. Well Done!"
+        }
+        
+        content.sound = UNNotificationSound.default()
+        content.badge = 1
+        content.categoryIdentifier = categoryIdentifire
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let identifier = "Local Notification"
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        
+        notificationCenter.add(request) { (error) in
+            if let error = error {
+                print("Error \(error.localizedDescription)")
+            }
+        }
+        
+//        let snoozeAction = UNNotificationAction(identifier: "Snooze", title: "Snooze", options: [])
+//        let deleteAction = UNNotificationAction(identifier: "DeleteAction", title: "Delete", options: [.destructive])
+//        let category = UNNotificationCategory(identifier: categoryIdentifire,
+//                                              actions: [snoozeAction, deleteAction],
+//                                              intentIdentifiers: [],
+//                                              options: [])
+        
+       // notificationCenter.setNotificationCategories([category])
+    }
+}
