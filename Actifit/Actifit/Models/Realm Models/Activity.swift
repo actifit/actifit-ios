@@ -17,6 +17,7 @@ class Activity : Object {
     @objc dynamic var id: Int = 0
     @objc dynamic var date: Date = Date()
     @objc dynamic var steps: Int = 0
+    // @objc dynamic var minutes: Int = 0
     
     override static func primaryKey() -> String? { //primary key needs to be a string or int
         return "id"
@@ -29,7 +30,7 @@ class Activity : Object {
                 if let realm = AppDelegate.defaultRealm() {
                     realm.beginWrite()
                     //realm.create(Activity.self, value: info)
-                    realm.create(Activity.self, value: info, update: false)
+                    realm.create(Activity.self, value: info, update: .error) //false //1122
                     try! realm.commitWrite()
                 }
             }
@@ -42,7 +43,7 @@ class Activity : Object {
             autoreleasepool {
                 if let realm = AppDelegate.defaultRealm() {
                     realm.beginWrite()
-                    realm.create(Activity.self, value: info, update: true)
+                    realm.create(Activity.self, value: info, update: .all) //true //1122
                     try! realm.commitWrite()
                 }
             }
@@ -66,7 +67,7 @@ class Activity : Object {
         var contents = [Activity]()
         if let realm = AppDelegate.defaultRealm() {
             contents = realm.objects(Activity.self).map({$0})
-            contents = self.removeDuplicates(activities: contents)
+           // contents = self.removeDuplicates(activities: contents)
         }
         return contents
     }
@@ -143,4 +144,43 @@ class Activity : Object {
         return ["date" : self.date, "steps" : self.steps]
     }
 }
+
+/*class everyFifteenMinuteEntity: Object {
+    
+    @objc dynamic var id: Int = 0
+    @objc dynamic var date: Date = Date()
+    @objc dynamic var steps: Int = 0
+    //@objc dynamic var interval : String = ""
+    
+    
+    override static func primaryKey() -> String? { //primary key needs to be a string or int
+        return "id"
+    }
+    
+    class func saveStepFifteenMinuteInterval(info : [String : Any]) {
+        DispatchQueue.global().async {
+            // Get new realm and table since we are in a new thread
+            autoreleasepool {
+                if let realm = AppDelegate.defaultRealm() {
+                    realm.beginWrite()
+                    //realm.create(Activity.self, value: info)
+                    realm.create(everyFifteenMinuteEntity.self, value: info, update: false)
+                    try! realm.commitWrite()
+                }
+            }
+        }
+    }
+    
+    //get all saved activities
+    class func all() -> [everyFifteenMinuteEntity] {
+        var contents = [everyFifteenMinuteEntity]()
+        if let realm = AppDelegate.defaultRealm() {
+            contents = realm.objects(everyFifteenMinuteEntity.self).map({$0})
+            // contents = self.removeDuplicates(activities: contents)
+        }
+        return contents
+    }
+    
+  
+}*/
 
