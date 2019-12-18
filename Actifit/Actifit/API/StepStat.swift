@@ -42,8 +42,18 @@ struct StepStat {
         steps = stepCount
     }
     
-    static func fetchTodaysStepStat(callback: @escaping (StepStat?, Error?)->Void) -> URLSessionDataTask? {
-        let datePath = "/today/1d.json"
+    static func fetchTodaysStepStat(forDate:Date,callback: @escaping (StepStat?, Error?)->Void) -> URLSessionDataTask? {
+        let appdelegate = AFAppDelegate()
+        let today = appdelegate.todayStartDate().toString(dateFormat: "yyyy-MM-dd")
+        let datepassed = forDate.toString(dateFormat: "yyyy-MM-dd")
+        var datePath = ""
+        
+        if today == datepassed{
+            datePath = "/today/1d.json"
+        }else{
+            datePath = "/\(datepassed)/1d.json"
+        }
+        
         return fetchSteps(for: datePath) { (stepStats, error) in
             callback(stepStats?.first, error)
         }
