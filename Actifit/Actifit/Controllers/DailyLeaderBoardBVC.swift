@@ -13,8 +13,10 @@ class DailyLeaderBoardBVC: UIViewController {
     @IBOutlet weak var backBtn : UIButton!
     @IBOutlet weak var dailyLeaderboardTableView : UITableView!
     
+    var dailyTopActifitters = "Daily Top Actifitters"
+    
     lazy var leaderboardArray = {
-        return [String]()
+        return [NSDictionary]()
     }()
     
     //MARK: VIEW LIFE CYCLE
@@ -32,6 +34,16 @@ class DailyLeaderBoardBVC: UIViewController {
         
         //get all daily leaderboard users list
         self.getDailyLeaderboard()
+        setupInitials()
+    }
+    
+    func setupInitials()
+    {
+        
+        dailyTopActifitters                                = "activity_leaderboard_title".localized()
+        
+        
+        
     }
     
     //MARK: INTERFACE BUILDER ACTIONS
@@ -40,9 +52,19 @@ class DailyLeaderBoardBVC: UIViewController {
         self.navigationController?.popViewController(animated: true)
     }
     
+    @IBAction func postDetailsAction(_ sender : UIButton) {
+        print(sender.tag)
+     let   obj  = self.leaderboardArray[sender.tag]
+    let url =  obj["url"] as? String
+        let Url = "https://actifit.io" + url!
+        if let URL = URL(string: Url) {
+            UIApplication.shared.open(URL)
+        }
+    }
+    
     //MARK: WEB SERVICES
     
-    func getDailyLeaderboard() {
+  /*  func getDailyLeaderboard() {
         ActifitLoader.show(title: Messages.fetching_leaderboard, animated: true)
         APIMaster.getDailyLeaderboard(completion: { [weak self] (jsonString) in
             DispatchQueue.main.async(execute: {
@@ -55,7 +77,7 @@ class DailyLeaderBoardBVC: UIViewController {
                 //show leaderboard user score
                 if noLeaderboardUsers == false {
                     self?.leaderboardArray = jsonString.components(separatedBy: CharacterSet.init(charactersIn: ";"))
-                    
+
                     //remove last element if an empty string
                     if let lastElement = self?.leaderboardArray.last {
                         if lastElement.isEmpty {
@@ -69,6 +91,8 @@ class DailyLeaderBoardBVC: UIViewController {
                     }
                 }
             }
+          
+            
             
             //show no users on leaderboard is api fails
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
@@ -84,8 +108,38 @@ class DailyLeaderBoardBVC: UIViewController {
                 self.showAlertWith(title: nil, message: error.localizedDescription)
             })
         }
-    }
+    } */
     
+   func getDailyLeaderboard() {
+                 ActifitLoader.show(title: Messages.fetching_leaderboard, animated: true)
+                APIMaster.getDailyLeaderboard(completion: { [weak self] (jsonString) in
+                    DispatchQueue.main.async(execute: {
+                        ActifitLoader.hide()
+                    })
+                    if let jsonString = jsonString as? String {
+                        let data = jsonString.utf8Data()
+                        do {
+                            let json = try JSONSerialization.jsonObject(with: data, options: [])
+                            if let jsonArray = (json as? [NSDictionary]){
+                               self?.leaderboardArray  = jsonArray
+                            }
+                        } catch {
+                           
+                            print("unable to fetch transactions")
+                        }
+                        DispatchQueue.main.async(execute: {
+                             self?.dailyLeaderboardTableView.reloadData()
+                        })
+                    }
+                }) { (error) in
+                    DispatchQueue.main.async(execute: {
+                        ActifitLoader.hide()
+                    })
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                        self.showAlertWith(title: nil, message: error.localizedDescription)
+                    })
+                }
+    }
 }
 
 extension DailyLeaderBoardBVC : UITableViewDataSource, UITableViewDelegate {
@@ -98,8 +152,34 @@ extension DailyLeaderBoardBVC : UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : DailyLeaderboardTableCell = tableView.dequeueReusableCell(withIdentifier: "DailyLeaderboardTableCell", for: indexPath) as! DailyLeaderboardTableCell
-        cell.leaderboardNameAndScoreLabel.text = self.leaderboardArray[indexPath.row]
+        let obj = self.leaderboardArray[indexPath.row]
+        let strCount = obj["activityCount"] as? [String] ?? []
+        let strciunt2 = strCount[0]
+       
+        let strName = obj["author"] as? String
+        let strRank = obj["leaderRank"] as? Int
+        let strImage = obj["userProfilePic"] as? String
+        
+        URLSession.shared.dataTask( with: NSURL(string:strImage!)! as URL, completionHandler: {
+            (data, response, error) -> Void in
+            DispatchQueue.main.async {
+                if let data = data {
+                     cell.leaderboardImage.image = UIImage(data: data)
+                }
+            }
+        }).resume()
+        
+        cell.leaderboardRank.text = "\(strRank ?? 0)"
+        cell.leaderboardName.text = strName
+        cell.leaderboardCount.text = strciunt2
+        cell.leaderboardImage.layer.cornerRadius = 16
+        cell.leaderboardImage.clipsToBounds =  true
+        cell.btnDetails.tag = indexPath.row
+        
         return cell
+    }
+    func setImageFromUrl(ImageURL :String) {
+        
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -107,13 +187,15 @@ extension DailyLeaderBoardBVC : UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
+        return 50
     }
     
     //MARK: UITableViewDataSource
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Daily Top Actifitters"
+        return dailyTopActifitters
     }
+    
+    
 }
 
