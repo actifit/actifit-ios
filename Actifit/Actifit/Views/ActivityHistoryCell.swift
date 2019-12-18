@@ -11,6 +11,7 @@ import UIKit
 class ActivityHistoryCell: UITableViewCell {
 
     @IBOutlet weak var dailyStepsLabel : UILabel!
+    @IBOutlet weak var viewHistoryDayButton : UIButton!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -24,7 +25,7 @@ class ActivityHistoryCell: UITableViewCell {
     }
 
     func configureWith(activity : Activity) {
-        self.dailyStepsLabel.text = self.formattedDAteStr(date: activity.date) + " - " + "Total Activity: \(activity.steps)"
+        self.dailyStepsLabel.text = activity.date.dateString() + " - " + "Total Activity: \(activity.steps)"
     }
     
     

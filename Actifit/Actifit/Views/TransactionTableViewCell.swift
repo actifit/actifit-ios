@@ -17,6 +17,15 @@ class TransactionTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        setupInitials()
+    }
+    
+    func setupInitials()
+    {
+        activityTypeLabel.text                  = "activity_type_lbl".localized()
+        tokenCountLabel.text                    = "token_count_lbl".localized()
+        dateLabel.text                          = "date_added_lbl".localized()
+        noteLabel.text                          = "note_lbl".localized()
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
@@ -26,10 +35,12 @@ class TransactionTableViewCell: UITableViewCell {
     }
     
     func configureWith(transaction : Transaction) {
-        self.activityTypeLabel.text = "Activity Type: \(transaction.reward_activity)"
-        self.tokenCountLabel.text = "Token Count: \(transaction.token_count)"
-        self.dateLabel.text = "Date Added: \(transaction.date)"
-        self.noteLabel.text = "Note: \(transaction.note)"
+        self.setupInitials()
+        self.activityTypeLabel.text = "Activity Type: ".localized() + transaction.reward_activity
+        self.tokenCountLabel.text = "Token Count: ".localized() + String(transaction.token_count)
+        self.dateLabel.text = "Date Added: ".localized() + transaction.date
+        self.noteLabel.text = "Note: ".localized() + transaction.note
+        
     }
 
 }

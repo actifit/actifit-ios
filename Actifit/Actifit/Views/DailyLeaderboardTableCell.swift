@@ -10,9 +10,13 @@ import UIKit
 
 class DailyLeaderboardTableCell: UITableViewCell {
 
-    @IBOutlet weak var leaderboardNameAndScoreLabel : UILabel!
+     @IBOutlet weak var leaderboardName : UILabel!
+     @IBOutlet weak var leaderboardCount:UILabel!
+     @IBOutlet weak var leaderboardRank :UILabel!
+     @IBOutlet weak var leaderboardImage:UIImageView!
+     @IBOutlet weak var btnDetails:UIButton!
 
-    override func awakeFromNib() {
+    override func awakeFromNib(){
         super.awakeFromNib()
         // Initialization code
     }
