@@ -33,12 +33,17 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Actifit would like access to your camera to allow you to capture images and include them in your actifit activity reports.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Actifit show health related data in the App</string>
+	<string>Accessing Health kit</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Actifit update health related data from the App</string>
+	<string>Actifit would like to access your health kit to get steps</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Actifit tracks your daily movement to enable you to get rewarded based on your activity count</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
