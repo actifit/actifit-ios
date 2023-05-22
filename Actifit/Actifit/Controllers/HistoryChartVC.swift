@@ -37,7 +37,7 @@ class HistoryChartVC: UIViewController,ChartViewDelegate {
         xAxis.labelFont = .systemFont(ofSize: 10)
         xAxis.granularity = 1
         xAxis.labelCount = 7
-        xAxis.valueFormatter = DayAxisValueFormatter(chart: barChart, labels: labels)
+        xAxis.valueFormatter = DayAxisValueFormatter(chart: barChart, labels: labels) as! AxisValueFormatter
         
         let line = ChartLimitLine(limit: 5000, label: "Min Reward - 5K Activity")
         line.lineColor = .red
@@ -70,7 +70,7 @@ class HistoryChartVC: UIViewController,ChartViewDelegate {
         rightAxis.axisMinimum = 0
         
         barChart.delegate = self
-        let set1 = BarChartDataSet(values: entries, label: "The year 2019")
+        let set1 = BarChartDataSet(entries: entries, label: "The year 2019")
         let data = BarChartData(dataSet: set1)
         data.setValueFont(UIFont(name: "HelveticaNeue-Light", size: 10)!)
         data.barWidth = 0.1

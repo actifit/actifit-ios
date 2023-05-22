@@ -17,6 +17,7 @@ class AuthenticationController: NSObject, SFSafariViewControllerDelegate {
     var authorizationVC: SFSafariViewController?
     var delegate: AuthenticationProtocol?
     var authenticationToken: String?
+    var fitBitUserId: String?
     
     init(delegate: AuthenticationProtocol?) {
         self.delegate = delegate
@@ -24,8 +25,10 @@ class AuthenticationController: NSObject, SFSafariViewControllerDelegate {
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "ACTIFIT"), object: nil, queue: nil, using: { [weak self] (notification: Notification) in
             // Parse and extract token
             let success: Bool
-            if let token = AuthenticationController.extractToken(notification, key: "#access_token") {
+            if let token = AuthenticationController.extractToken(notification, key: "actifitcb://fitbitcallback#access_token") {
                 self?.authenticationToken = token
+                self?.fitBitUserId = AuthenticationController.extractToken(notification, key: "user_id")
+                
                 NSLog("You have successfully authorized")
                 success = true
             } else {

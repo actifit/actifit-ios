@@ -40,7 +40,7 @@ class DailyLeaderBoardBVC: UIViewController {
     func setupInitials()
     {
         
-        dailyTopActifitters                                = "activity_leaderboard_title".localized()
+        dailyTopActifitters    = "activity_leaderboard_title".localized()
         
         
         

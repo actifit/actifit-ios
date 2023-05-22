@@ -11,8 +11,10 @@ import AWSS3
 import AWSMobileClient
 import SnapKit
 import SafariServices
+import HealthKit
+import CryptoKit
 
-class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
+class PostToSteemitVC: UIViewController,UINavigationControllerDelegate,UIActionSheetDelegate {
     
     @IBOutlet weak var markdownContentLabel: UILabel!
     @IBOutlet weak var postContentLabel: UILabel!
@@ -67,13 +69,18 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     @IBOutlet weak var markDOwnView: UIView!
     @IBOutlet weak var btnToday: UIButton!
     @IBOutlet weak var btnYesterday: UIButton!
+    @IBOutlet weak var sendPostBtn: UIButton!
     
     
     var authenticationController: AuthenticationController?
+    var encyptedFitBit = ""
     var isFitBitCount = false
+    var isTodaySelected = true
     var fitBitStepCount = 0
     var reportView: ReportPreView!
     var isMaxiToken = false
+    var ishealthStoreCount = false
+    var healthStore = HKHealthStore()
     lazy var currentUser = {
         return User.current()
     }()
@@ -97,20 +104,23 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         super.viewDidLoad()
         
         
+        sendPostBtn.layer.cornerRadius = 10
+        sendPostBtn.layer.borderColor = UIColor.white.cgColor
+        sendPostBtn.layer.borderWidth = 2
+        
         let userName = UserDefaults.standard.string(forKey: "currentUserName")
         if userName  != nil{
             self.steemitUsernameTextField.text = userName
         }else{
-            self.steemitUsernameTextField.text = ""
+          //  self.steemitUsernameTextField.text = "vevita"
         }
         let userPrivateKey = UserDefaults.standard.string(forKey: "currentUserPrivateKey")
         if userPrivateKey  != nil{
             self.steemitPostingPrivateKeyTextField.text = userPrivateKey
         }else{
-            self.steemitPostingPrivateKeyTextField.text = ""
+          //  self.steemitPostingPrivateKeyTextField.text = "5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe"
         }
-        
-        
+    
         AWSMobileClient.initialize()
         self.activityTypeLabel.text = ""
         self.defaultPostTitle = "\(Messages.default_post_title)\(todayDateStringWithFormat(format: "MMMM d yyyy"))"
@@ -138,6 +148,11 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
             
                }
         
+        //show current user steemit username and private posting key
+//        if let currentUser = self.currentUser {
+//            self.steemitUsernameTextField.text = "vevita"
+//            self.steemitPostingPrivateKeyTextField.text = "5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe"
+//        }
         
         self.applyFinishingTouchToUIElements()
         
@@ -186,8 +201,6 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         self.insertImageBtn.setTitle("insert_img_btn_lbl".localized(), for: .normal)
         self.postToSteemitBtn.setTitle("post_to_steem_btn_txt".localized(), for: .normal)
 
-        
-        
     }
     
     func setUpMarkDownView() {
@@ -324,6 +337,7 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     
     
     
+    
     //MARK: INTERFACE BUILDER ACTIONS
     
     @IBAction func backBtnAction(_ sender : UIButton) {
@@ -332,8 +346,9 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     
     @IBAction func btnToday(_ sender : UIButton)
     {
+        isTodaySelected = true
         btnToday.setImage( UIImage.init(named: "radioSelected"), for: .normal)
-        btnYesterday.setImage( UIImage.init(named: "radioOff"), for: .normal)
+        btnYesterday.setImage( UIImage.init(named: "radio"), for: .normal)
         //activityDate = dateformat(date: Date())
         self.activityCountValueLabel.text = "0"
         
@@ -356,7 +371,8 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     }
     
     @IBAction func btnYesterday(_ sender : UIButton) {
-        btnToday.setImage( UIImage.init(named: "radioOff"), for: .normal)
+        isTodaySelected = false
+        btnToday.setImage( UIImage.init(named: "radio"), for: .normal)
         btnYesterday.setImage( UIImage.init(named: "radioSelected"), for: .normal)
         //activityDate = dateformat(date: Date().dayBefor())
         
@@ -382,9 +398,14 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
                 self.activityCountValueLabel.text = "\(Activity.allWithoutCountZero()[i].steps)"
                 self.activityDate = AppDelegate.todayStartDate().yesterday.dateString()
                 self.activityDateToSave = AppDelegate.todayStartDate().yesterday
-                self.makeYesterdayAllEntriesAsDetailedActivityString()
+              //  self.makeYesterdayAllEntriesAsDetailedActivityString()
             }
-        
+            else{
+            
+                self.activityDate = AppDelegate.todayStartDate().yesterday.dateString()
+                self.activityDateToSave = AppDelegate.todayStartDate().yesterday
+            
+            }
         }
         
     }
@@ -478,21 +499,35 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         
         
         // check minimum steps count required to post the activity
-        var stepsCount = 0
+        var stepsCount: Int? = 0
+        
         if isFitBitCount {
             stepsCount = fitBitStepCount
             activityJson[PostKeys.dataTrackingSource] = "Fitbit Tracking"
+            ishealthStoreCount = false
+            isFitBitCount = false
             
-        }else if let activity = Activity.allWithoutCountZero().first(where: {resetTime(date: $0.date) == resetTime(date: AppDelegate.todayStartDate())}){//else if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
+        }
+        else if ishealthStoreCount{
+            stepsCount = Int(self.activityCountValueLabel.text ?? "0") ?? 0
+            activityJson[PostKeys.dataTrackingSource] = "healthapp"
+            isFitBitCount = false
+            ishealthStoreCount = false
+            
+        }
+        else if let activity = Activity.allWithoutCountZero().first(where: {resetTime(date: $0.date) == resetTime(date: AppDelegate.todayStartDate())}){//else if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
 //            stepsCount = activity.steps
+            ishealthStoreCount = false
+            isFitBitCount = false
             stepsCount = Int(self.activityCountValueLabel.text ?? "0") ?? 0
             activityJson[PostKeys.dataTrackingSource] = "Device Tracking"
+            activityJson[PostKeys.fitbitUserId] = ""
         }
         
-       /* if stepsCount < PostMinActivityStepsCount {
+        if stepsCount! < PostMinActivityStepsCount {
             self.showAlertWith(title: nil, message: Messages.min_activity_steps_count_error + "\(PostMinActivityStepsCount) " + "activity yet.")
             return
-        }*/
+        }
         
         let contentText = (self.postContentTextView.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         if contentText.count < PostContentMinCharsCount {
@@ -519,7 +554,6 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         activityJson[PostKeys.content] = self.postContentTextView.text
         activityJson[PostKeys.tags] = self.tagsString()
         activityJson[PostKeys.step_count] = stepsCount
-        
         activityJson[PostKeys.activity_type] = activityType
         activityJson[PostKeys.height] = self.heightTextField.text ?? ""
         activityJson[PostKeys.weight] = self.weightTextField.text ?? ""
@@ -529,6 +563,13 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         activityJson[PostKeys.bodyfat] = self.bodyFatTextField.text ?? ""
         activityJson[PostKeys.activityDate] = self.activityDate.replacingOccurrences(of: "-", with: "")
         activityJson[PostKeys.detailedActivity] = self.detailedActivityStepsDataString
+        if authenticationController?.fitBitUserId != "" && authenticationController?.fitBitUserId != nil{
+            SHA512Conversion(fitbitId: (authenticationController?.fitBitUserId)!)
+            activityJson[PostKeys.fitbitUserId] = encyptedFitBit
+        }
+        else{
+            activityJson[PostKeys.fitbitUserId] = ""
+        }
         
         if isMaxiToken{
             activityJson[PostKeys.fullafitpay] = "on"
@@ -576,8 +617,32 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     }
     
     @IBAction func fitBitBtnAction(_ sender: Any) {
-        authenticationController = AuthenticationController(delegate: self)
-        authenticationController?.login(fromParentViewController: self)
+    
+         let alert = UIAlertController(title: "Sync your data from", message: "Please Select an Option", preferredStyle: .actionSheet)
+
+           alert.addAction(UIAlertAction(title: "Fitbit", style: .default , handler:{ (UIAlertAction)in
+               print("User click Fitbit button")
+            self.authenticationController = AuthenticationController(delegate: self)
+            self.authenticationController?.login(fromParentViewController: self)
+           }))
+
+           alert.addAction(UIAlertAction(title: "Watch/Health App", style: .default , handler:{ (UIAlertAction)in
+               print("User click Watch button")
+            self.getHealthKitPermission()
+           }))
+
+           alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler:{ (UIAlertAction)in
+               print("User click Dismiss button")
+           }))
+
+           self.present(alert, animated: true, completion: {
+               print("completion block")
+           })
+    }
+    
+    @IBAction func watchBtnAction(_ sender: Any) {
+        print("Watch button pressed")
+        
     }
     
     @IBAction func videoBtn(_ sender: Any) {
@@ -587,6 +652,59 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         controller.delegate = self
     }
     //MARK: HELPERS
+    
+    func getHealthKitPermission() {
+
+            guard HKHealthStore.isHealthDataAvailable() else {
+                print("Health kit is unavailable")
+                return
+            }
+
+            let stepsCount = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!
+            
+            self.healthStore.requestAuthorization(toShare: [], read: [stepsCount]) { (success, error) in
+                if success {
+                    print("Permission accept.")
+                    self.retrieveStepCount { (steps) in
+                        print("Steps Retrived :", steps)
+                        DispatchQueue.main.async{
+                            self.ishealthStoreCount = true
+                            self.activityCountValueLabel.text =  String(describing: Int(steps))//String(describing: steps)
+                        }
+                    }
+                }
+                else {
+                    if error != nil {
+                        print(error ?? "")
+                    }
+                    print("Permission denied.")
+                }
+            }
+    }
+    
+    func retrieveStepCount(completion: @escaping (_ stepRetrieved: Double) -> Void) {
+        var startFrom = Date()
+        var endUpto = Date()
+        
+        if isTodaySelected{
+            startFrom = Calendar.current.startOfDay(for: Date())
+            endUpto = Date()
+        }else{
+            startFrom = self.resetTime(date: AppDelegate.todayStartDate().addingTimeInterval(-60*60*24))
+            endUpto = Calendar.current.startOfDay(for: Date())
+        }
+        let stepsQuantityType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+        let predicate = HKQuery.predicateForSamples(withStart: startFrom, end: endUpto, options: .strictStartDate)
+        let query = HKStatisticsQuery(quantityType: stepsQuantityType, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, _ in
+            guard let result = result, let sum = result.sumQuantity() else {
+                completion(0.0)
+                return
+            }
+            completion(sum.doubleValue(for: HKUnit.count()))
+        }
+        healthStore.execute(query)
+    }
+    
     
     func applyFinishingTouchToUIElements() {
         self.showMeasurementUnits()
@@ -684,6 +802,23 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
         return dateFormatter.string(from: Date())
     }
     
+    
+    // SHA 512 for fitbit ID encryption
+    func SHA512Conversion(fitbitId:String) {
+        guard let data = fitbitId.data(using: .utf8) else { return }
+        if #available(iOS 13.0, *) {
+            let digest = SHA512.hash(data: data)
+            print(digest.data) // 64 bytes
+            print(digest.hexStr) // 309ECC489C12D6EB4CC40F50C902F2B4D0ED77EE511A7C7A9BCD3CA86D4CD86F989DD35BC5FF499670DA34255B45B0CFD830E81F605DCF7DC5542E93AE9CD76F
+            encyptedFitBit = digest.hexStr
+        } else {
+            // Fallback on earlier versions
+        }
+       
+    }
+   
+
+    
     @objc func appMovedToForeground() {
         if let activity = Activity.allWithoutCountZero().first(where: {$0.date == AppDelegate.todayStartDate()}) {
             //self.activityCountValueLabel.text = "\(activity.steps)"
@@ -704,40 +839,57 @@ class PostToSteemitVC: UIViewController,UINavigationControllerDelegate {
     func postActvityWith(json : [String : Any]) {
         ActifitLoader.show(title: Messages.sending_post, animated: true)
         APIMaster.postActvityWith(info: json, completion: { [weak self] (json) in
-            DispatchQueue.main.async(execute: {
-                ActifitLoader.hide()
-            })
+//            DispatchQueue.main.async(execute: {
+//                ActifitLoader.hide()
+//            })
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
                 if let jsonString = json as? String {
                     if jsonString == "success" {
+                        DispatchQueue.main.async(execute: {
+                            ActifitLoader.showLoaderStatusImage(sourceVC: self, navigateBack: true , success: true, status: Messages.success_post)
+                            ActifitLoader.delegate = self
+                        })
                         //update user last post time interval
                         UserDefaults.standard.set("", forKey: "postcontent")
                         if let currentUser =  User.current() {
                             currentUser.updateUser(steemit_username: currentUser.steemit_username, private_posting_key: currentUser.private_posting_key, last_post_date: self?.activityDateToSave ?? Date())
                             
                         }
-                        self?.showAlertWithOkCompletion(title: nil, message: Messages.success_post, okClickedCompletion: { (COM) in
-                            self?.navigationController?.popViewController(animated: true)
-                        })
+//                        self?.showAlertWithOkCompletion(title: nil, message: Messages.success_post, okClickedCompletion: { (COM) in
+//                            self?.navigationController?.popViewController(animated: true)
+//                        })
                     } else {
                         //if post fails then jsonString will contain error message to show to user
-                        self?.showAlertWith(title: nil, message: jsonString)
+//                        self?.showAlertWith(title: nil, message: jsonString)
+                        ActifitLoader.showLoaderStatusImage(sourceVC: self, success: false, status: jsonString)
                     }
                 } else {
-                    self?.showAlertWith(title: nil, message: Messages.failed_post)
+                    ActifitLoader.showLoaderStatusImage(sourceVC: self, success: false, status: Messages.failed_post)
+//                    self?.showAlertWith(title: nil, message: Messages.failed_post)
                 }
             })
         }) { (error) in
             DispatchQueue.main.async(execute: {
-                ActifitLoader.hide()
+                ActifitLoader.showLoaderStatusImage(sourceVC: self, success: false, status: error.localizedDescription)
+//                ActifitLoader.hide()
             })
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                self.showAlertWith(title: nil, message: error.localizedDescription)
-            })
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+//                self.showAlertWith(title: nil, message: error.localizedDescription)
+//            })
         }
     }
     
+}
+
+@available(iOS 13.0, *)
+extension Digest {
+    var bytes: [UInt8] { Array(makeIterator()) }
+    var data: Data { Data(bytes) }
+
+    var hexStr: String {
+        bytes.map { String(format: "%02X", $0) }.joined()
+    }
 }
 
 extension Date {
@@ -837,5 +989,14 @@ extension PostToSteemitVC : UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         
+    }
+}
+
+extension PostToSteemitVC : SwiftLoaderDismissDelegate{
+    func loaderSetToHidden(goBack: Bool) {
+        print("Go Back Called")
+        if goBack{
+            self.navigationController?.popViewController(animated: true)
+        }
     }
 }

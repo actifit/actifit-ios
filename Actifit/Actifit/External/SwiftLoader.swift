@@ -14,6 +14,12 @@ let loaderSpinnerMarginSide : CGFloat = 35.0
 let loaderSpinnerMarginTop : CGFloat = 20.0
 let loaderTitleMargin : CGFloat = 5.0
 
+
+protocol SwiftLoaderDismissDelegate : NSObject {
+    func loaderSetToHidden(goBack : Bool)
+}
+
+
 public class SwiftLoader: UIView {
     
     private var coverView : UIView?
@@ -24,6 +30,9 @@ public class SwiftLoader: UIView {
     private var canUpdated = false
     private var title: String?
     private var tapGestureRecognizer : UITapGestureRecognizer?
+    var delegate : SwiftLoaderDismissDelegate?
+    private var goBack : Bool = false
+    
     
     private var config : Config = Config() {
         didSet {
@@ -50,6 +59,12 @@ public class SwiftLoader: UIView {
     
     public func show(title: String?, animated : Bool) {
         
+        if let viewWithTag = self.viewWithTag(100) {
+                viewWithTag.removeFromSuperview()
+            }else{
+                print("No!")
+            }
+        
         let currentWindow : UIWindow = UIApplication.shared.keyWindow!
 
         tapGestureRecognizer = UITapGestureRecognizer.init(target: self, action: #selector(handleTap))
@@ -67,6 +82,7 @@ public class SwiftLoader: UIView {
         let center : CGPoint = CGPoint(x: width / 2.0, y: height / 2.0)
         
         loader.center = center
+        self.addSubview(loadingView!)
         
         if (loader.superview == nil) {
             loader.coverView = UIView(frame: CGRect.init(x: 0, y: 0, width: 240, height: 240))
@@ -82,6 +98,23 @@ public class SwiftLoader: UIView {
         }
     }
     
+    
+    public func showLoaderStatusImage(sourceVC: UIViewController?, navigateBack : Bool = false,success : Bool, status : String?){
+        self.loadingView?.removeFromSuperview()
+        let indicatorImageView = UIImageView(frame: CGRect(x: self.bounds.width/2 - 45, y: -15, width: 90, height: 90))
+        indicatorImageView.image = UIImage(named: success == true ? "success" : "error")
+        indicatorImageView.tag = 100
+        if success{
+            titleLabel?.text = status ?? "Success"
+        } else {
+            titleLabel?.text = status ?? "Failure"
+        }
+        self.goBack = navigateBack
+        self.delegate = sourceVC as? SwiftLoaderDismissDelegate
+        
+        self.addSubview(indicatorImageView)
+    }
+    
     @objc func handleTap() {
         // handling code
         self.hide()
@@ -94,6 +127,7 @@ public class SwiftLoader: UIView {
         }
         let loader = self.sharedInstance
         loader.stop()
+        delegate?.loaderSetToHidden(goBack: self.goBack)
     }
     
     public func setConfig(config : Config) {

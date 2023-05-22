@@ -11,7 +11,7 @@ import CoreMotion
 import EFCountingLabel
 import AVFoundation
 import Charts
-import Crashlytics
+//import FirebaseCrashlytics
 import RealmSwift
 import UserNotifications
 
@@ -58,6 +58,15 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
 
        
     }
+    
+    @IBAction func rankBtnAction(_ sender: Any) {
+        if rank.text ?? "" != ""{
+            guard let url = URL(string: "https://actifit.io/userrank") else { return }
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    
     //MARK: INSTANCE VARIABLES
     
     let activityManager = CMMotionActivityManager()
@@ -121,7 +130,6 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
         UserImage()
         //self.checkPermissionForlocalNotification()
         
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -184,25 +192,24 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
     func UserImage() {
         var  strImageUrl  = ""
         if let strUserName =  UserDefaults.standard.string(forKey: "username"), strUserName != "" {
-            usernameLabel.isHidden = false
-            usernameLabel.text = strUserName
+          //  usernameLabel.isHidden = false
+          //  usernameLabel.text = strUserName
             strImageUrl = "https://steemitimages.com/u/" + strUserName + "/avatar"
-      
-       
-        URLSession.shared.dataTask( with: NSURL(string:strImageUrl)! as URL, completionHandler: {
-            (data, response, error) -> Void in
-            DispatchQueue.main.async {
-                if let data = data {
-                    self.userImage.isHidden = false
-                    self.userImage.image = UIImage(data: data)
+            guard let imageFinalURL = URL(string: strImageUrl) else { return }
+            URLSession.shared.dataTask( with: imageFinalURL, completionHandler: {
+                (data, response, error) -> Void in
+                DispatchQueue.main.async {
+                    if let data = data {
+                        self.userImage.isHidden = false
+                        self.userImage.image = UIImage(data: data)
+                    }
+                    else{
+                        self.userImage.isHidden = true
+                    }
                 }
-                else{
-                    self.userImage.isHidden = true
-                }
-            }
-        }).resume()
-    }
-        else{
+            }).resume()
+            
+        }else{
             usernameLabel.isHidden = true
             
         }
@@ -241,7 +248,7 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
        // let months = ["Jan", "Feb", "Mar"]
       
         setChart(dataPoints: months, values: unitsSold)
-        piechartView.chartDescription?.text = ""
+        piechartView.chartDescription.text = ""
         
         piechartView.drawEntryLabelsEnabled = false
         piechartView.legend.formToTextSpace = 20
@@ -317,14 +324,14 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
                     do {
                         let json = try JSONSerialization.jsonObject(with: data, options: [])
                         if let jsonInfo = (json as? NSDictionary){
-                            if let rank = jsonInfo["user_rank"] as? Double {
+                            if let rank =  jsonInfo["user_rank"] {
                                 DispatchQueue.main.async(execute: {
-                                    let totalRanks = "/100";
-                                    self.rank.text = "\(rank)\(totalRanks)"
+                                   // let totalRanks = "/100";
+                                    self.rank.text = "\(rank)"
                                     self.username.text = "@\(currentUser.steemit_username)"
                                     UserDefaults.standard.set(self.rank.text, forKey: "rank")
                                     UserDefaults.standard.set(self.username.text, forKey: "username")
-                                })
+                               })
                             }
                         }
                     } catch {
@@ -399,7 +406,7 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
         xAxis.labelFont = .systemFont(ofSize: 8)
         xAxis.granularity = 1
         xAxis.labelCount = 7
-        xAxis.valueFormatter = DayAxisValueFormatter(chart: datebarChart, labels: labels)
+        xAxis.valueFormatter = DayAxisValueFormatter(chart: datebarChart, labels: labels) as! AxisValueFormatter
         
 
         
@@ -508,8 +515,8 @@ class ActivityTrackingVC: UIViewController, UIImagePickerControllerDelegate,UINa
         data.setValueFont(UIFont(name: "HelveticaNeue-Light", size: 8)!)
         data.barWidth = 0.1
         dailybarChart.data = data
-      dailybarChart.zoom(scaleX: 0, scaleY: 0, x: 0, y: 0)
-      dailybarChart.zoom(scaleX: 10, scaleY: 0, x: 0, y: 0)
+        dailybarChart.zoom(scaleX: 0, scaleY: 0, x: 0, y: 0)
+        dailybarChart.zoom(scaleX: 10, scaleY: 0, x: 0, y: 0)
 //      dailybarChart.setScaleMinima(10.0, scaleY: 0.0)
         
     }
@@ -915,19 +922,25 @@ extension ActivityTrackingVC {
     private func checkCameraAuthorizationStatus() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized: // The user has previously granted access to the camera.
-            self.takePicture()
+            DispatchQueue.main.async {
+                self.takePicture()
+            }
             
         case .notDetermined: // The user has not yet been asked for camera access.
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 if granted {
-                    self.takePicture()
+                    DispatchQueue.main.async {
+                        self.takePicture()
+                    }
                 }
             }
             
         case .denied: // The user has previously denied access.
             self.showAlertWith(title: "Alert", message: "Please enable the camera usage under settings")
+            return
         case .restricted: // The user can't grant access due to restrictions.
             self.showAlertWith(title: "Alert", message: "Please enable the camera usage under settings")
+            return
         }
     }
     
@@ -993,71 +1006,92 @@ extension ActivityTrackingVC {
    //save/update user current steps from today midnight
     private func saveAfterFifteenMinute(steps : Int, midnightStartDate : String, timeInterval:String,id:Int) {
     
-
-        let realm = try! Realm()
-        
-        let allActivities = ActivityFifteenMinutesInterval()
-        
-        allActivities.date = midnightStartDate
-        allActivities.interval = timeInterval
-        allActivities.steps = steps
-        allActivities.id = id
-        allActivities.idInString = String(id)
-        allActivities.stepsInString = String(steps)
-        
-        
-        try! realm.write {
-            realm.add(allActivities, update: .modified) //true  //1122
-        }
-        
-        print("all data added..")
-        
-        let allsavedRecordsOfHistory = AllRecordsOfActivitiesNew.all()
-        
-        let arrayOfActivities = ActivityFifteenMinutesInterval.all()
-        let allRecordsOfActivitiesNew = AllRecordsOfActivitiesNew()
-        allRecordsOfActivitiesNew.date = midnightStartDate
-        //allRecordsOfActivitiesNew.activities.append(objectsIn: arrayOfActivities)
-        let dataToSave = NSKeyedArchiver.archivedData(withRootObject: arrayOfActivities)
-        allRecordsOfActivitiesNew.activitiesListData = dataToSave
- 
-        
-//        let dataToSave = NSKeyedArchiver.archivedData(withRootObject: arrayOfActivities)
-//        print(dataToSave)
-//        if let anArrayOfPersonsRetrieved = NSKeyedUnarchiver.unarchiveObject(with: dataToSave) as? [ActivityFifteenMinutesInterval] {
-//            print(anArrayOfPersonsRetrieved)
-//
-//        }
-        
-       
-        
-        
-//        try! realm.write {
-//            realm.add(allRecordsOfActivitiesNew, update: .all) //true  //1122
-//        }
-        
-        //TEST
-        if let activityInHistory = allsavedRecordsOfHistory.first(where: {$0.date == midnightStartDate}){
-//            let activityToUpdate = ["id":activityInHistory.id, "date": midnightStartDate,  "activities" : allRecordsOfActivitiesNew.activities] as [String : Any]
-//            activityInHistory.upadteWith(info: activityToUpdate)
+        do {
+            let realm = try Realm()
             
-            try! realm.write {
-               activityInHistory.activitiesListData = allRecordsOfActivitiesNew.activitiesListData
+            //        let realm = try! Realm()
+            
+            let allActivities = ActivityFifteenMinutesInterval()
+            
+            allActivities.date = midnightStartDate
+            allActivities.interval = timeInterval
+            allActivities.steps = steps
+            allActivities.id = id
+            allActivities.idInString = String(id)
+            allActivities.stepsInString = String(steps)
+            
+            
+//            try! realm.write {
+//                realm.add(allActivities, update: .modified) //true  //1122
+//            }
+            
+            do {
+                try realm.write {
+                    realm.add(allActivities, update: .modified) //true  //1122
+                }
+            } catch {
+                // LOG ERROR
             }
             
-        } else {
-            let activityToSave = ["id":allsavedRecordsOfHistory.count+1,"date": midnightStartDate, "activitiesListData":allRecordsOfActivitiesNew.activitiesListData] as [String : Any]
-            allRecordsOfActivitiesNew.saveWith(info: activityToSave)
-        }
-        //TEST
-        
-        if id == TimeSlot.count - 2{
-            self.barEntry()
-            self.historyFifteenMinute = ActivityFifteenMinutesInterval.all()
             
-            self.history = Activity.allWithoutCountZero()
-            self.everyDayChart()
-        }
+            print("all data added..")
+            
+            let allsavedRecordsOfHistory = AllRecordsOfActivitiesNew.all()
+            
+            let arrayOfActivities = ActivityFifteenMinutesInterval.all()
+            let allRecordsOfActivitiesNew = AllRecordsOfActivitiesNew()
+            allRecordsOfActivitiesNew.date = midnightStartDate
+            //allRecordsOfActivitiesNew.activities.append(objectsIn: arrayOfActivities)
+//            let dataToSave = NSKeyedArchiver.archivedData(withRootObject: arrayOfActivities)
+            
+            
+            let encoder = JSONEncoder()
+            let encodedData: Data? = try? encoder.encode(arrayOfActivities)
+           
+            
+            
+            allRecordsOfActivitiesNew.activitiesListData = encodedData
+            
+            
+            //        let dataToSave = NSKeyedArchiver.archivedData(withRootObject: arrayOfActivities)
+            //        print(dataToSave)
+            //        if let anArrayOfPersonsRetrieved = NSKeyedUnarchiver.unarchiveObject(with: dataToSave) as? [ActivityFifteenMinutesInterval] {
+            //            print(anArrayOfPersonsRetrieved)
+            //
+            //        }
+            
+            
+            
+            
+            //        try! realm.write {
+            //            realm.add(allRecordsOfActivitiesNew, update: .all) //true  //1122
+            //        }
+            
+            //TEST
+            if let activityInHistory = allsavedRecordsOfHistory.first(where: {$0.date == midnightStartDate}){
+                //            let activityToUpdate = ["id":activityInHistory.id, "date": midnightStartDate,  "activities" : allRecordsOfActivitiesNew.activities] as [String : Any]
+                //            activityInHistory.upadteWith(info: activityToUpdate)
+                
+                try! realm.write {
+                    activityInHistory.activitiesListData = allRecordsOfActivitiesNew.activitiesListData
+                }
+                
+            } else {
+                let activityToSave = ["id":allsavedRecordsOfHistory.count+1,"date": midnightStartDate, "activitiesListData":allRecordsOfActivitiesNew.activitiesListData] as [String : Any]
+                allRecordsOfActivitiesNew.saveWith(info: activityToSave)
+            }
+            //TEST
+            
+            if id == TimeSlot.count - 2{
+                self.barEntry()
+                self.historyFifteenMinute = ActivityFifteenMinutesInterval.all()
+                
+                self.history = Activity.allWithoutCountZero()
+                self.everyDayChart()
+            }
+        } catch let error as NSError {
+              print("Error Occured")
+            }
         
    }
     
@@ -1087,13 +1121,13 @@ extension ActivityTrackingVC {
             self.timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true, block: { (timer) in
                 self.queryAndUpdateDatafromMidnight()
             })
-            self.timerAfterFifteen = Timer.scheduledTimer(withTimeInterval: 20, repeats: true, block: { (timer) in
+            self.timerAfterFifteen = Timer.scheduledTimer(withTimeInterval: 60, repeats: true, block: { (timer) in
                 self.queryAndUpdateDatafromMidnightFifteenMinute()
             })
         } else {
             // Fallback on earlier versions
             self.timer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(self.queryAndUpdateDatafromMidnight), userInfo: nil, repeats: true)
-             self.timerAfterFifteen = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(self.queryAndUpdateDatafromMidnightFifteenMinute), userInfo: nil, repeats: true)
+             self.timerAfterFifteen = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(self.queryAndUpdateDatafromMidnightFifteenMinute), userInfo: nil, repeats: true)
         }
     }
     
@@ -1315,16 +1349,21 @@ extension ActivityTrackingVC {
 //        dailybarChart.setScaleMinima(6.0, scaleY: 0.0)
         
         
-        if entriesFifteenMinuteIntervel.count > 10{
-                   dailybarChart.zoom(scaleX: 7, scaleY: 0, x: 0, y: 0)
+        if entriesFifteenMinuteIntervel.count > 20{
+            dailybarChart.zoom(scaleX: 7.0, scaleY: 0, x: 0, y: 0)
                    dailybarChart.setScaleMinima(6.0, scaleY: 0.0)
-               }else if entriesFifteenMinuteIntervel.count >= 7{
+               }else if entriesFifteenMinuteIntervel.count > 15{
+            dailybarChart.zoom(scaleX: 5.0, scaleY: 0, x: 0, y: 0)
+            // dailybarChart.setScaleMinima(4.0, scaleY: 0.0)
+        }else if entriesFifteenMinuteIntervel.count >= 7{
                    dailybarChart.zoom(scaleX: 3.5, scaleY: 0, x: 0, y: 0)
-                   dailybarChart.zoom(scaleX: 3.0, scaleY: 0, x: 0, y: 0)
+              //      dailybarChart.setScaleMinima(3.0, scaleY: 0.0)
                }else if entriesFifteenMinuteIntervel.count > 5{
                    dailybarChart.zoom(scaleX: 1.5, scaleY: 0, x: 0, y: 0)
-                   dailybarChart.zoom(scaleX: 1.5, scaleY: 0, x: 0, y: 0)
+            //dailybarChart.setScaleMinima(1.5, scaleY: 0.0)
                }
+        
+       
         
     }
     
