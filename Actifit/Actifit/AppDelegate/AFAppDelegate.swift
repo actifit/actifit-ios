@@ -9,9 +9,9 @@
 import UIKit
 import RealmSwift
 import IQKeyboardManagerSwift
-import Fabric
+//import Fabric
 import Firebase
-import Crashlytics
+//import Crashlytics
 import UserNotifications
 import DropDown
 import Localizr_swift
@@ -26,7 +26,6 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
 
         //Enabling IBKeyboardManager to handle keyboard for textfields and textviews
         //Fabric.with([Crashlytics.self])
-        
         if UserDefaults.standard.string(forKey: "SelectedLanguage") == nil {
             Localizr.update(locale: "en")
         }
@@ -38,22 +37,30 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         UIApplication.shared.applicationIconBadgeNumber = 0
 
         let config = Realm.Configuration(
-            schemaVersion: 7,
+            schemaVersion: 9,
             migrationBlock: { migration, oldSchemaVersion in
-                if (oldSchemaVersion < 6) {
+                if (oldSchemaVersion < 9) {
                     migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
                         newObject!["isDeviceSensorSystemSelected"] = true
                         newObject!["isSbdSPPaySystemSelected"] = true
                         newObject!["isReminderSelected"] = false
                         newObject!["fitBitMeasurement"] = false
                         newObject!["appVersion"] = UIApplication.appVersion!
+                        newObject!["notificationSelected"] = true
+                        newObject!["hiveChain"] = ""
+                        newObject!["steemChain"] = ""
+                        newObject!["blurtChain"] = ""
 
                     }
                 }
         })
         Realm.Configuration.defaultConfiguration = config
+        //lazy var realm:Realm = {
+        //    return try! Realm()
+       // }()
+        
         do {
-            let realm =  try Realm.init(configuration: config)
+             var realm =  try Realm.init(configuration: config)
             print(realm)
         } catch {
             print("error")
@@ -110,7 +117,7 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
     
     func defaultRealm() -> Realm? {
         var config = Realm.Configuration.defaultConfiguration
-        config.schemaVersion =  7 //CurrentRealmSchemaVersion
+        config.schemaVersion =  9 //CurrentRealmSchemaVersion
         config.migrationBlock = { (migration, oldSchemaVersion) in
 
                 migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
@@ -119,12 +126,20 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
                     newObject!["isReminderSelected"] = false
                     newObject!["fitBitMeasurement"] = false
                     newObject!["appVersion"] = UIApplication.appVersion!
+                    newObject!["notificationSelected"] = true
+                    newObject!["hiveChain"] = ""
+                    newObject!["steemChain"] = ""
+                    newObject!["blurtChain"] = ""
+                    
                 }
 
         }
         do {
             Realm.Configuration.defaultConfiguration = config
-            let realm =  try Realm.init(configuration: config)
+       // lazy var realm:Realm = {
+       //     return try! Realm()
+       // }()
+             let realm =  try Realm.init(configuration: config)
             return realm
         } catch {
             print("error")
@@ -227,6 +242,9 @@ extension AFAppDelegate:MessagingDelegate{
         Messaging.messaging().apnsToken = deviceToken
         let str =  Messaging.messaging().fcmToken
         print("Device Token: \(token)")
+            UserDefaults.standard.setValue(str, forKey: "DeviceToken")
+            Messaging.messaging().subscribe(toTopic: "actidefnots")
+            
        // UserdefaultStore.USERDEFAULTS_SET_STRING_KEY(object: str!, key: "DeviceToken")
     }
     
@@ -270,10 +288,10 @@ extension AFAppDelegate:MessagingDelegate{
 //    }
 //
     
-    func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
+  /*  func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
             NSLog("hello")
     }
-    
+    */
     
 }
 
@@ -284,7 +302,12 @@ extension AFAppDelegate: UNUserNotificationCenterDelegate {
     
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         
-        completionHandler([.alert, .sound])
+        if UserDefaults.standard.bool(forKey: "notifications") == false{
+            completionHandler([])
+        }
+        else{
+            completionHandler([.alert, .sound])
+        }
     }
     
     func userNotificationCenter(_ center: UNUserNotificationCenter,

@@ -52,6 +52,7 @@ struct StepStat {
             datePath = "/today/1d.json"
         }else{
             datePath = "/\(datepassed)/1d.json"
+            
         }
         
         return fetchSteps(for: datePath) { (stepStats, error) in
