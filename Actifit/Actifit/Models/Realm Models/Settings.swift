@@ -27,6 +27,10 @@ class Settings: Object {
     @objc dynamic var charityName: String = ""
     @objc dynamic var charityDisplayName: String = ""
     @objc dynamic var appVersion: String = ""
+    @objc dynamic var notificationSelected: Bool = true
+    @objc dynamic var hiveChain: String = ""
+    @objc dynamic var steemChain: String = ""
+    @objc dynamic var blurtChain: String = ""
 
     class func saveWith(info : [String : Any]) {
         DispatchQueue.global().async {
@@ -71,7 +75,7 @@ class Settings: Object {
     }
     
     //update the activity(steps count)
-    func update(measurementSystem :MeasurementSystem, isDonatingCharity : Bool, charityName : String, charityDisplayName : String,isDeviceSensorSystemSelected: Bool,isSbdSPPaySystemSelected: Bool, isReminderSelected: Bool,  fitBitMeasurement: Bool,appVersion:String) {
+    func update(measurementSystem :MeasurementSystem, isDonatingCharity : Bool, charityName : String, charityDisplayName : String,isDeviceSensorSystemSelected: Bool,isSbdSPPaySystemSelected: Bool, isReminderSelected: Bool,  fitBitMeasurement: Bool,appVersion:String, notificationSelected: Bool, hiveChainSelected: String, steemChainSelected: String, blurtChainSelected: String) {
         autoreleasepool {
             if let realm = AppDelegate.defaultRealm() {
                 realm.beginWrite()
@@ -84,6 +88,10 @@ class Settings: Object {
                 self.isDeviceSensorSystemSelected = isDeviceSensorSystemSelected
                 self.fitBitMeasurement = fitBitMeasurement
                 self.appVersion = appVersion
+                self.notificationSelected = notificationSelected
+                self.hiveChain = hiveChainSelected
+                self.steemChain = steemChainSelected
+                self.blurtChain = blurtChainSelected
                 try! realm.commitWrite()
             }
         }

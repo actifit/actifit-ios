@@ -12,8 +12,8 @@ import Realm
 
 class User : Object {
     
-    @objc dynamic var steemit_username: String = ""
-    @objc dynamic var private_posting_key: String = ""
+    @objc dynamic var steemit_username: String = "vevita"
+    @objc dynamic var private_posting_key: String = "5JeAQvwUdeuvZvSbvHW24r5jQrQ1kLXHcyn3Echqg6b2LkJHhhe"
     @objc dynamic var last_post_date: Date = Date()
 
     class var sharedInstance : User {
