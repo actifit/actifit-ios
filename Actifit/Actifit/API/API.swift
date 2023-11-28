@@ -8,7 +8,7 @@
 
 import Foundation
 
-typealias APICompletionHandler = ((_ info : Any?) -> ())?
+typealias APICompletionHandler = ((_ info : Any?,_ statusCode: Int? ) -> ())?
 typealias APIFailureHandler = ((_ error : NSError) -> ())?
 
 public class API : NSObject{
@@ -21,7 +21,153 @@ public class API : NSObject{
     class var sharedInstance : API {
         return API()
     }
- 
+    
+    
+    func getLastNotificationRead(userName: String, completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.notificationRead + userName)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFieldsForUpdateSettings()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getNotificationStats(completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.notificationStats)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFieldsForUpdateSettings()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    
+    func castSurveyVoice(userName: String, surveyId: String, option: String,completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.castSurveyURL + "user=\(userName)&id=\(surveyId)&option=\(option)")
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFieldsForUpdateSettings()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func checkSurveyStatus(userName: String, surveyId: String, completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.surveyStatusURL + "user=\(userName)&id=\(surveyId)")
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getSurveys(completion: APICompletionHandler, failure: APIFailureHandler){
+        let url = URL(string: ApiUrls.surveysURL)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getVideoTutorial(completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.videoTutorial)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func registerNotification(info: [String:Any],completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.registerPushNotification)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        request.appendBodyWith(json: info)
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_POST, completion: completion, failure: failure)
+    }
+    
+    func getMarketExchangesAPI(completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.getMarketExchange)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getReferrals(username: String, completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.getReferrals + username)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getProducts(completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.getProducts)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getActiveGadgetsByUser(username: String, completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.getActiveGadgetsByUser+username)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    
+    
+    func getDailyTips(completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.getDailyTips)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+        
+    }
+    
+    func getAfitBalance(username: String, completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: "\(ApiUrls.getAfitBalance)\(username)?fullbalance=1")
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+        
+    }
+    
+    
+    func getAccountData(username: String, completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: "\(ApiUrls.getUserData)?user=\(username)")
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+
+    
+    func getVotingStatus(completion: APICompletionHandler, failure: APIFailureHandler) {
+        let url = URL(string: ApiUrls.getVotingStatus)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getAllNotifications(completion: APICompletionHandler, failure: APIFailureHandler, username: String) {
+        let urlStr = "\(ApiUrls.getAllNotifications)\(username)"
+        let url =  URL(string: urlStr)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        self.forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getNewsBanner(completion: APICompletionHandler, failure: APIFailureHandler) {
+        let urlStr = ApiUrls.getNewsBanner
+        let url =  URL(string: urlStr)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        self.forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getLoginImage(completion: APICompletionHandler, failure : APIFailureHandler) {
+        let urlStr = "\(ApiUrls.loginImageURL)"
+        let url =  URL(string: urlStr)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        self.forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
+    func getRCPercentage(completion: APICompletionHandler, failure : APIFailureHandler,username: String) {
+        let urlStr = "\(ApiUrls.getRCPercentageURL)\(username)"
+        let url =  URL(string: urlStr)
+        var request = URLRequest.init(url: url!)
+        request.addBasicHeaderFields()
+        self.forwardRequest(request: request, httpMethod: HttpMethods.HttpMethod_GET, completion: completion, failure: failure)
+    }
+    
     //MARK: API callers
     func getRank(username : String, completion : APICompletionHandler, failure : APIFailureHandler) {
         let urlStr = "\(ApiUrls.getRank)\(username)"
@@ -121,7 +267,7 @@ public class API : NSObject{
     //MARK: Dispatching Request to server
     
     func forwardRequest(request : URLRequest, httpMethod : String, completion : APICompletionHandler, failure : APIFailureHandler) {
-        
+        var statusCode: Int? = nil
         var sendRequest:URLRequest = request
         
         sendRequest.httpMethod = httpMethod as String
@@ -130,6 +276,10 @@ public class API : NSObject{
         let session = URLSession.shared
         
         let task = session.dataTask(with: sendRequest, completionHandler: { data, response, error in
+            if let httpResponse = response as? HTTPURLResponse {
+                statusCode = httpResponse.statusCode
+                   // Use the statusCode as needed
+               }
             if error == nil{
                 if let data = data {
                     #if DEBUG
@@ -138,15 +288,15 @@ public class API : NSObject{
                     //use library to extract data from response json
                     if let string = String.init(data: data, encoding: String.Encoding.utf8) {
                         // do {
-                        // let json = try JSONSerialization.jsonObject(with: data, options: [])
-                        completion!(string)
+                       
+                        completion!(string, statusCode)
                         //} catch {
                         //}
                     } else {
-                        completion!(nil)
+                        completion!(nil,statusCode)
                     }
                 } else {
-                    completion!(nil)
+                    completion!(nil,statusCode)
                 }
             } else{
                 if failure != nil {
