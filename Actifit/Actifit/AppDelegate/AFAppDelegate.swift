@@ -15,17 +15,19 @@ import Firebase
 import UserNotifications
 import DropDown
 import Localizr_swift
-
+import GoogleMobileAds
 @UIApplicationMain
 class AFAppDelegate: UIResponder, UIApplicationDelegate {
-
+    
     var window: UIWindow?
     let notificationCenter = UNUserNotificationCenter.current()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-
+        
         //Enabling IBKeyboardManager to handle keyboard for textfields and textviews
         //Fabric.with([Crashlytics.self])
+        GADMobileAds.sharedInstance().start(completionHandler: nil)
+        GADMobileAds.sharedInstance().requestConfiguration.testDeviceIdentifiers = [ "xxxxxxxxxxxxxxxxxx" ]
         if UserDefaults.standard.string(forKey: "SelectedLanguage") == nil {
             Localizr.update(locale: "en")
         }
@@ -35,9 +37,9 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         DropDown.startListeningToKeyboard()
         registerForPushNotifications()
         UIApplication.shared.applicationIconBadgeNumber = 0
-
+        
         let config = Realm.Configuration(
-            schemaVersion: 9,
+            schemaVersion: 10,
             migrationBlock: { migration, oldSchemaVersion in
                 if (oldSchemaVersion < 9) {
                     migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
@@ -50,17 +52,17 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
                         newObject!["hiveChain"] = ""
                         newObject!["steemChain"] = ""
                         newObject!["blurtChain"] = ""
-
+                        
                     }
                 }
-        })
+            })
         Realm.Configuration.defaultConfiguration = config
         //lazy var realm:Realm = {
         //    return try! Realm()
-       // }()
+        // }()
         
         do {
-             var realm =  try Realm.init(configuration: config)
+            var realm =  try Realm.init(configuration: config)
             print(realm)
         } catch {
             print("error")
@@ -78,11 +80,23 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         
-        
-        
+        if User.current()?.steemit_username == nil {
+            let loginSB = UIStoryboard(name: "Login", bundle: nil)
+            let loginVC = loginSB.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
+            window = UIWindow(frame: UIScreen.main.bounds)
+            window?.rootViewController = loginVC
+            window?.makeKeyAndVisible()
+        } else {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let activityVC = storyboard.instantiateViewController(withIdentifier: "ActivityTrackingVC") as! ActivityTrackingVC
+            let navigationController = UINavigationController(rootViewController: activityVC)
+            window = UIWindow(frame: UIScreen.main.bounds)
+            window?.rootViewController = navigationController
+            window?.makeKeyAndVisible()
+        }
         return true
     }
-
+    
     func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any]) -> Bool {
         let notification = Notification(
             name: Notification.Name(rawValue: "ACTIFIT"),
@@ -95,56 +109,56 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
     }
-
+    
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     }
-
+    
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
     }
-
+    
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     }
-
+    
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-
+    
     //MARK: Realm Method helpers
     
     func defaultRealm() -> Realm? {
         var config = Realm.Configuration.defaultConfiguration
-        config.schemaVersion =  9 //CurrentRealmSchemaVersion
+        config.schemaVersion =  10 //CurrentRealmSchemaVersion
         config.migrationBlock = { (migration, oldSchemaVersion) in
-
-                migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
-                    newObject!["isDeviceSensorSystemSelected"] = true
-                    newObject!["isSbdSPPaySystemSelected"] = true
-                    newObject!["isReminderSelected"] = false
-                    newObject!["fitBitMeasurement"] = false
-                    newObject!["appVersion"] = UIApplication.appVersion!
-                    newObject!["notificationSelected"] = true
-                    newObject!["hiveChain"] = ""
-                    newObject!["steemChain"] = ""
-                    newObject!["blurtChain"] = ""
-                    
-                }
-
+            
+            migration.enumerateObjects(ofType: Settings.className()) { oldObject, newObject in
+                newObject!["isDeviceSensorSystemSelected"] = true
+                newObject!["isSbdSPPaySystemSelected"] = true
+                newObject!["isReminderSelected"] = false
+                newObject!["fitBitMeasurement"] = false
+                newObject!["appVersion"] = UIApplication.appVersion!
+                newObject!["notificationSelected"] = true
+                newObject!["hiveChain"] = ""
+                newObject!["steemChain"] = ""
+                newObject!["blurtChain"] = ""
+                
+            }
+            
         }
         do {
             Realm.Configuration.defaultConfiguration = config
-       // lazy var realm:Realm = {
-       //     return try! Realm()
-       // }()
-             let realm =  try Realm.init(configuration: config)
+            // lazy var realm:Realm = {
+            //     return try! Realm()
+            // }()
+            let realm =  try Realm.init(configuration: config)
             return realm
-        } catch {
+        } catch let error {
             print("error")
         }
-
+        
         return nil
     }
     
@@ -157,30 +171,27 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         calendar.timeZone = NSTimeZone.local
         let dateAtMidnight = calendar.startOfDay(for: Date())
         return dateAtMidnight
-    
-//        let currentDate = Date()
-//        let timezoneOffset =  TimeZone.current.secondsFromGMT()
-//        let epochDate = currentDate.timeIntervalSince1970
-//        let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
-//        let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
-//        return timeZoneOffsetDate
         
-       
+        //        let currentDate = Date()
+        //        let timezoneOffset =  TimeZone.current.secondsFromGMT()
+        //        let epochDate = currentDate.timeIntervalSince1970
+        //        let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
+        //        let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
+        //        return timeZoneOffsetDate
+        
+        
         
     }
     
     func yesterdayStartDate() -> Date {
-       
-            let currentDate = Date()
-            let timezoneOffset =  TimeZone.current.secondsFromGMT()
-            let epochDate = currentDate.timeIntervalSince1970
-            let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
-            let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
-            return timeZoneOffsetDate
-        
-        
+        let currentDate = Date()
+        let timezoneOffset =  TimeZone.current.secondsFromGMT()
+        let epochDate = currentDate.timeIntervalSince1970
+        let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
+        let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
+        return timeZoneOffsetDate
     }
-            
+    
     
     
     
@@ -191,12 +202,12 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         let dateAtMidnight = calendar.startOfDay(for: date)
         return dateAtMidnight
         
-//        let currentDate = date //Date()
-//        let timezoneOffset =  TimeZone.current.secondsFromGMT()
-//        let epochDate = currentDate.timeIntervalSince1970
-//        let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
-//        let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
-//        return timeZoneOffsetDate
+        //        let currentDate = date //Date()
+        //        let timezoneOffset =  TimeZone.current.secondsFromGMT()
+        //        let epochDate = currentDate.timeIntervalSince1970
+        //        let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
+        //        let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
+        //        return timeZoneOffsetDate
         
     }
     
@@ -217,7 +228,7 @@ class AFAppDelegate: UIResponder, UIApplicationDelegate {
         let newDate = dateFormatter.string(from: date) //pass Date here
         return newDate
     }
-
+    
 }
 
 extension AFAppDelegate:MessagingDelegate{
@@ -229,30 +240,38 @@ extension AFAppDelegate:MessagingDelegate{
                 print("Permission granted: \(granted)") // 3
                 guard granted else { return }
                 self.getNotificationSettings()
-        }
+            }
     }
     
-    func application(
-        _ application: UIApplication,
-        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
-        ) {
-        let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
-        let token = tokenParts.joined()
-        // UserDefaults.standard.set("\(token)", forKey: HCConstants.DeviceTokan)
-        Messaging.messaging().apnsToken = deviceToken
-        let str =  Messaging.messaging().fcmToken
-        print("Device Token: \(token)")
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        if let userName = User.current()?.steemit_username {
+            let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+            let token = tokenParts.joined()
+            // UserDefaults.standard.set("\(token)", forKey: HCConstants.DeviceTokan)
+            Messaging.messaging().apnsToken = deviceToken
+            let str =  Messaging.messaging().fcmToken
+            print("Device Token: \(token)")
             UserDefaults.standard.setValue(str, forKey: "DeviceToken")
-            Messaging.messaging().subscribe(toTopic: "actidefnots")
-            
-       // UserdefaultStore.USERDEFAULTS_SET_STRING_KEY(object: str!, key: "DeviceToken")
+            //Messaging.messaging().subscribe(toTopic: "actidefnots")
+            Messaging.messaging().subscribe(toTopic: "actidefnots") { error in
+                print(error)
+            }
+            API().registerNotification(info: ["user": userName, "token" : str, "app": "iOS"]) { info, statusCode in
+                print(statusCode)
+            } failure: { error in
+                print(error)
+            }
+        }
+        
+        // UserdefaultStore.USERDEFAULTS_SET_STRING_KEY(object: str!, key: "DeviceToken")
     }
+    
     
     func application(
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("Failed to register: \(error)")
-    }
+            print("Failed to register: \(error)")
+        }
     
     func getNotificationSettings() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
@@ -263,35 +282,6 @@ extension AFAppDelegate:MessagingDelegate{
             }
         }
     }
-    
-    
-    
-    // This method will be called when app received push notifications in foreground
-//    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-//
-//            completionHandler([.alert, .badge, .sound])
-//
- //       }
-    
-    
-    
-    
-    // This method is called when user CLICKED on the notification
-//    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void)
-//    {
-//
-//        let userInfo = response.notification.request.content.userInfo
-//        let sender_user_id = userInfo["sender_user_id"] as! String
-//
-//        print("Local Notification Received")
-//        completionHandler()
-//    }
-//
-    
-  /*  func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
-            NSLog("hello")
-    }
-    */
     
 }
 
@@ -328,7 +318,7 @@ extension AFAppDelegate: UNUserNotificationCenterDelegate {
         
         content.title = "Actifit"
         if steps == 5{
-                content.body = "Congrats On Reaching \(steps)K Milestone. Keep Going!"
+            content.body = "Congrats On Reaching \(steps)K Milestone. Keep Going!"
         }else{
             content.body = "Congrats On Reaching \(steps)K Milestone. Well Done!"
         }
@@ -347,13 +337,5 @@ extension AFAppDelegate: UNUserNotificationCenterDelegate {
             }
         }
         
-//        let snoozeAction = UNNotificationAction(identifier: "Snooze", title: "Snooze", options: [])
-//        let deleteAction = UNNotificationAction(identifier: "DeleteAction", title: "Delete", options: [.destructive])
-//        let category = UNNotificationCategory(identifier: categoryIdentifire,
-//                                              actions: [snoozeAction, deleteAction],
-//                                              intentIdentifiers: [],
-//                                              options: [])
-        
-       // notificationCenter.setNotificationCategories([category])
     }
 }
