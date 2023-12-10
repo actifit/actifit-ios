@@ -97,8 +97,8 @@
 "fitbit_measurements_lbl"  = "Fetch Measurements";
 "fitbit_fetch_steps"  = "Fetch Steps";
 "steem_post_payout"  = "Post Payout";
-"pay_option_50_50"  = "50% SBD - 50% SP";
-"pay_option_full_sp"  = "100% SP";
+"pay_option_50_50"  = "50% HBD - 50% HP";
+"pay_option_full_sp"  = "100% HP";
 "measure_system_lbl"  = "Measurement System";
 "metric_system_option_lbl"  = "Metric";
 "us_system_option_lbl"  = "US System";
@@ -198,3 +198,77 @@
 "actifit_crash_restarted"  = "Actifit restarted after crash";
 "entry_view_details_button"  = "Post Details";
 "language"  = "Language";
+
+//login Screen
+"login" = "Login";
+"create_account" = "Create an account";
+"private_posting_key" = "Private Posting Key";
+"help_me_find_posting_key" = "Help Me find my Private Posting Key";
+"skip" = "SKIP";
+"proceed" = "PROCEED";
+
+
+"resource_credit_title" = "Resource Credits";
+"resource_credits_desc" = "This value represents your account's
+RC (Resource Credits).
+RC credits allow you to transact on Hive chain, on which Actifit mainly runs.
+It is recommended to maintain a value above 50%.
+If your RC gets to a critical low level, you might not be able to create an actifit report, and will need to wait for a day or two till your RC replenishes.
+You can also power up more HIVE to replenish your RC";
+
+"user_rank_title" = "User Rank";
+
+"user_rand_desc" = "Your user rank plays a role in your daily actifit rewards, as well as provides extra access to gadgets and cool things around Actifit ecosystem.
+User Rank determines 25% of the total reward value. The ranking system is scaled from 0 (lowest) to 100+, and is affected by a multitude of factors, while making it a dynamic system, as follows:
+
+•Amount of Delegated Steem/HIVE
+Power (SP/HP)
+
+•Amount of Held AFIT Tokens
+
+•Total Activity Rewarded
+
+•Last 10 Days Activity Count
+
+•Amount of AFITX held on Hive-Engine, Steem-Engine and on BSC, whether liquid or locked as liquidity vs BB or BUSD";
+
+"close_upper" = "CLOSE";
+"user_rank_Details_upper" = "USER RANK DETAILS";
+"hourly" = "HOURLY";
+"daily" = "DAILY";
+"actifit_reward_cycle" = "Actifit Reward Cycle";
+"reward_cycle_details" = "Actifit distributes rewards via reward cycles. Normally cycles are run every 24 hours.\nThe timer represents the time till next cycle. If the status says \"processing\" this means reward cycle is running, and if you have any eligible entry for rewards, it will receive rewards prior to next cycle.";
+"potential_token_earnings" = "Your Potential Token Earnings";
+"low_afit_balance" = "\n⚠ You are currently NOT earning AFIT due to your balance being below 5000 AFIT.";
+"no_blurt_account" = "\n⚠ You are currently NOT earning BLURT due to not having a Blurt account. You can signup for one via our signup page";
+"low_blurt_balance" = "\n⚠ You are currently NOT earning BLURT due to your balance being below 5 BLURT.";
+"eligible_tokens_earn" = "You are currently eligible to earn tokens currently showing in the pane as you make your actifit post.";
+"minimum_actifity_start" = "\nYou need to reach minimum 5,000 activity to start earning.\nYour AFIT earnings come in within 48 hours of making your post.";
+"other_token_rewards" = "\nYour other token rewards come in after 7 days of your post.";
+"dont_show_again" = "DON'T SHOW AGAIN";
+"random_activit_tip" = "Random Actifit Tip";
+"virtual_gadgets" = "Virtual Gadgets";
+"virtual_gadgets_details" = "Gadgets allow you to increase your actifit report earnings. More than 40 gadgets are available increasing your earnings. Some increase your friend's earnings as well. You can explore and buy gadgets by visiting Actifit Market";
+"market" = "MARKET";
+"no_active_gadgets" = "No Active Gadgets";
+"earn_extra_prizes_title" = "Earn Extra Prizes Daily";
+"earn_extra_prizes_descript" = "You can earn daily extra rewards by clicking on the bonus buttons below.";
+"free_rewards" = "Free Reward";
+"free_rewards_Details" = "Free bonus can be claimed once daily. Earn extra random reward up to 3 AFIT";
+"5k_extra_reward" = "5K Extra Reward";
+"5k_reward_details" = "Unlocked when you reach 5,000 activity count. Earn extra random reward up to 5 AFIT";
+"7k_extra_reward" = "7K Extra Reward";
+"7k_reward_details" = "Unlocked when you reach 7,000 activity count. Earn extra random reward up to 7 AFIT";
+"10k_extra_reward" = "10K Extra Reward";
+"10_reward_details" = "Unlocked when you reach 10,000 activity count. Earn extra random reward up to 10 AFIT";
+"already_climed_reward" = "You have already claimed this reward today, You can do so again tomorrow";
+"claimed_reward" = "You have been successfully rewarded %@ AFIT Tokens";
+"not_eligible_for_reward" = "You are not yet eligible for this reward";
+"successful_referrals" = "Successful Referrals";
+"your_referral_link" = "Your Referral Link";
+"proceed_by_biometric" = "proceed using biometric id";
+"survey_poll_participation" = "Taking part in Actifit polls allows you to earn extra AFIT. There is a one time %@ for answering this poll. There is No correct or incorrect answer.";
+"chitchat" = "Chit Chat";
+"chat_with_other" = "Chat with other actifitters and other hive communities on the go. Have fun while walking or at your leisure.";
+"minimum_characters_required_title" = "Minimum Characters Requirement";
+"minimum_characters_required_description" = "A minimum of 100 characters is required in your post content. The more quality/lengthier content you provide, the better!";

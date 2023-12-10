@@ -92,8 +92,8 @@
 "fitbit_measurements_lbl"  = "Erfasse Messungen";
 "fitbit_fetch_steps"  = "Erfasse Schritte";
 "steem_post_payout"  = "STEEM Post-Auszahlung";
-"pay_option_50_50"  = "50% SBD - 50% SP";
-"pay_option_full_sp"  = "100% SP";
+"pay_option_50_50"  = "50% HBD - 50% HP";
+"pay_option_full_sp"  = "100% HP";
 "measure_system_lbl"  = "Messdaten-System";
 "metric_system_option_lbl"  = "Metrisch";
 "us_system_option_lbl"  = "US-System";

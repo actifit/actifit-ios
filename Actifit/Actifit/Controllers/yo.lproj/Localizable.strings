@@ -93,8 +93,8 @@
 "fitbit_measurements_lbl"  = "Sawari Awọn iwọn";
 "fitbit_fetch_steps"  = "Sawajade Awọn igbesẹ";
 "steem_post_payout"  = "Isanjade Atẹjade STEEM";
-"pay_option_50_50"  = "50% SBD - 50% SP";
-"pay_option_full_sp"  = "100% SP";
+"pay_option_50_50"  = "50% HBD - 50% HP";
+"pay_option_full_sp"  = "100% HP";
 "measure_system_lbl"  = "Ilana Isodiwọn";
 "metric_system_option_lbl"  = "Mẹtiriki";
 "us_system_option_lbl"  = "Ilana US";

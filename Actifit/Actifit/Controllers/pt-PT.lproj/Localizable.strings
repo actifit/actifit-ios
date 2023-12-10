@@ -16,8 +16,8 @@
 "fitbit_measurements_lbl"                    = "Buscar Medições";
 "fitbit_fetch_steps"                         = "Buscar Passos";
 "steem_post_payout"                          = "Pagamento da Publicação STEEM";
-"pay_option_50_50"                           = "50% SBD - 50% SP";
-"pay_option_full_sp"                         = "100% SP";
+"pay_option_50_50"  = "50% HBD - 50% HP";
+"pay_option_full_sp"  = "100% HP";
 "Language"                                   = "Language";
 "measure_system_lbl"                         = "Sistema de Medição";
 "metric_system_option_lbl"                   = "Métrico";
