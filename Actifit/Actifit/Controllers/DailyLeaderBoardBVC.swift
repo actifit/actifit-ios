@@ -112,7 +112,7 @@ class DailyLeaderBoardBVC: UIViewController {
     
    func getDailyLeaderboard() {
                  ActifitLoader.show(title: Messages.fetching_leaderboard, animated: true)
-                APIMaster.getDailyLeaderboard(completion: { [weak self] (jsonString) in
+                APIMaster.getDailyLeaderboard(completion: { [weak self] (jsonString, _ ) in
                     DispatchQueue.main.async(execute: {
                         ActifitLoader.hide()
                     })

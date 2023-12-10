@@ -20,7 +20,7 @@ class WalletVC: UIViewController {
     
     @IBOutlet weak var backBtn : UIButton!
     @IBOutlet weak var usernameTextField : AFTextField!
-    @IBOutlet weak var checkBalanceBtn : UIButton!
+    
     @IBOutlet weak var actfitTokensLabel : UILabel!
     @IBOutlet weak var transactionsTableView : UITableView!
 
@@ -40,7 +40,7 @@ class WalletVC: UIViewController {
         super.viewDidLoad()
         if let user = self.currentUser {
             self.username = user.steemit_username
-            self.usernameTextField.text = self.username
+            //self.usernameTextField.text = self.username
         }
         self.applyFinishingTouchToUIElements()
         self.getWalletBalance()
@@ -64,7 +64,6 @@ class WalletVC: UIViewController {
     {
         yourWalletLabel.text                  = "your_wallet_title".localized()
         steemitUsernameLabel.text             = "steem_username_lbl".localized()
-        checkBalanceBtn.titleLabel!.text      = "get_balance_btn_lbl".localized()
         actifitTokensHeadingLabel.text        = "afit_token_balance".localized()
         actfitTokensLabel.text                = "unable_fetch_balance".localized()
         transactionsHeadingLabel.text         = "actifit_transactions_lbl".localized()
@@ -89,7 +88,7 @@ class WalletVC: UIViewController {
     //MARK: HELPERS
     
     func applyFinishingTouchToUIElements() {
-        self.checkBalanceBtn.layer.cornerRadius = 4.0
+     
         self.transactionsTableView.tableFooterView = UIView()
         self.backBtn.setImage(#imageLiteral(resourceName: "back_black").withRenderingMode(.alwaysTemplate), for: .normal)
         self.backBtn.tintColor = UIColor.white
@@ -98,12 +97,13 @@ class WalletVC: UIViewController {
     //MARK: WEB SERVICES
     
     func getWalletBalance() {
-        if let text = self.usernameTextField.text {
-            self.username = text.byTrimming(string: "@").lowercased()
-        }
+        //if let text = self.usernameTextField.text {
+            self.username = currentUser?.steemit_username.byTrimming(string: "@").lowercased() ?? ""
+           // text.byTrimming(string: "@").lowercased()
+       // }
         self.view.endEditing(true)
         ActifitLoader.show(title: Messages.fetching_user_balance, animated: true)
-        APIMaster.getWalletBalanceWith(username:self.username ,completion: { [weak self] (jsonString) in
+        APIMaster.getWalletBalanceWith(username:self.username ,completion: { [weak self] (jsonString, _ ) in
             DispatchQueue.main.async(execute: {
                 ActifitLoader.hide()
             })
@@ -134,10 +134,11 @@ class WalletVC: UIViewController {
                 self.showAlertWith(title: nil, message: error.localizedDescription)
             })
         }
+    
     }
     
     func getTransactions() {
-        APIMaster.getTransactions(username: self.username,completion: { [weak self] (jsonString) in
+        APIMaster.getTransactions(username: self.username,completion: { [weak self] (jsonString, _) in
             DispatchQueue.main.async(execute: {
                 ActifitLoader.hide()
             })

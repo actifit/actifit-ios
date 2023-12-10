@@ -12,6 +12,8 @@ import Localizr_swift
 
 class SettingsVC: UIViewController {
     
+    @IBOutlet weak var logoutButton: UIButton!
+    
     @IBOutlet weak var settingsLabel: UILabel!
     @IBOutlet weak var activityDataSource: UILabel!
     @IBOutlet weak var phoneSensorLabel: UILabel!
@@ -44,6 +46,7 @@ class SettingsVC: UIViewController {
     @IBOutlet weak var notificationsStack: UIStackView!
     @IBOutlet weak var mainContainerInScrollViewHeightConstraint: NSLayoutConstraint!
     
+    @IBOutlet weak var dailyTipButton: UIButton!
     @IBOutlet weak var languageButton: UIButton!
     @IBOutlet weak var backBtn : UIButton!
     @IBOutlet weak var metricMeasurementSystemBtn : UIButton!
@@ -115,11 +118,32 @@ class SettingsVC: UIViewController {
     @IBOutlet weak var forthNotificationBtn: UIButton!
     @IBOutlet weak var fifthNotificationBtn: UIButton!
     @IBOutlet weak var sixthNotificationBtn: UIButton!
+    
+    @IBOutlet weak var liquidDotView: UIView!
+    @IBOutlet weak var declinePayoutDotView: UIView!
+    
+    @IBOutlet weak var declinePayoutBtn: UIButton!
+    @IBOutlet weak var liquidHBDBtn: UIButton!
+    
+    @IBOutlet weak var seventhNotificationBtn: UIButton!
+    
+    @IBOutlet weak var seventhNotificationLabel: UILabel!
+    
+    @IBOutlet weak var eightNotificationBtn: UIButton!
+    
+    @IBOutlet weak var eightsNotificationLabel: UILabel!
+    
+    var isTipsSelected : Bool {
+        return UserDefaults.standard.showTips
+    }
     var isMetricSystemSelected = true
     var isDonateToCharitySelected = false
     var isDeviceSensorSystemSelected = true
     var fitBitMeasurement = false
-    var isSbdSPPaySystemSelected = true
+    var isSbdSPPaySystemSelected = false
+    var is100SPSelected = false
+    var isLiquidSPSelected = false
+    var isDeclinePayoutSelected = false
     var isReminderSelected = false
     var charities = [Charity]()
     var charityName = ""
@@ -140,13 +164,14 @@ class SettingsVC: UIViewController {
     var isForthNotificationSelected = false
     var isFifthNotificationSelected = false
     var isSixthNotificationSelected = false
+    var isSeventhNotificationSelected = false
+    var isEigthNotificationSelected = false
     
+    @IBOutlet weak var notificationStackView: UIStackView!
     @IBOutlet weak var heightConstraintForNotificationView: NSLayoutConstraint!
     //MARK: VIEW LIFE CYCLE
     
-    lazy var settings = {
-        return Settings.current()
-    }()
+    var settings =  Settings.current()
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
@@ -179,6 +204,8 @@ class SettingsVC: UIViewController {
             self.fitBitMeasurement = settings.fitBitMeasurement
             self.isReminderSelected = settings.isReminderSelected
             self.isSbdSPPaySystemSelected = settings.isSbdSPPaySystemSelected
+            self.isLiquidSPSelected = settings.isLiquidHBDSelected
+            self.isDeclinePayoutSelected = settings.isDeclinePayoutSelected
             self.charityName = settings.charityName
             self.charityDisplayName = settings.charityDisplayName
             if settings.steemChain == "Steem"{
@@ -212,13 +239,26 @@ class SettingsVC: UIViewController {
         self.setDropDown()
         self.setupInitials()
         saveSettingsBtn.contentHorizontalAlignment = .center
-        mainContainerInScrollViewHeightConstraint.constant = 900 + 203
+       // mainContainerInScrollViewHeightConstraint.constant = 900 + 203
         
         enableNotifications(select: false)
         disableNotifications(select: true)
         self.notificationsStack.isHidden = true
         self.heightConstraintForNotificationView.constant = 83.5
-        mainContainerInScrollViewHeightConstraint.constant = 900
+        
+//        self.charityDisplayName = self.charities.first?.charity_name ?? ""
+//        self.charityName = self.charities.first(where: {$0.display_name == self.charityDisplayName})?.charity_name ?? ""
+//        self.showCharityBtn.setTitle(self.charityDisplayName, for: .normal)
+//        self.setTextViewLinkString()
+      //  mainContainerInScrollViewHeightConstraint.constant = 900
+        self.dailyTipButton.layer.borderColor = UIColor.darkGray.cgColor
+        self.dailyTipButton.layer.borderWidth = 2.0
+        self.dailyTipButton.layer.cornerRadius = 2.0
+        if isTipsSelected {
+            dailyTipButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate).withTintColor(.white), for: .normal)
+            dailyTipButton.backgroundColor = .primaryRedColor()
+            dailyTipButton.tintColor = .white
+        }
     }
     
     
@@ -249,6 +289,61 @@ class SettingsVC: UIViewController {
     }
     
   
+    @IBAction func logoutTapped(_ sender: Any) {
+        showAlertWith(title: "", message: "Are you sure you want to logout?", okActionTitle: "Yes", cancelActionTitle: "No", okClickedCompletion: OkClickedCompletion { finished in
+            self.logout()
+        }, cancelClickedCompletion: CancelClickedCompletion {finished in 
+            
+        })
+    }
+    
+    @IBAction func dailyTipButtonTapped(_ sender: Any) {
+        if isTipsSelected {
+            dailyTipButton.setImage(UIImage(), for: .normal)
+            dailyTipButton.backgroundColor = .white
+          
+            UserDefaults.standard.showTips = false
+        } else {
+            UserDefaults.standard.showTips = true
+            dailyTipButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate).withTintColor(.white), for: .normal)
+            dailyTipButton.backgroundColor = .primaryRedColor()
+            dailyTipButton.tintColor = .white
+           
+        }
+    }
+    
+    
+    @IBAction func declinePayoutBtnTapped(_ sender: Any) {
+        isLiquidSPSelected = false
+        isDeclinePayoutSelected = true
+        is100SPSelected = false
+        self.isSbdSPPaySystemSelected = false
+        selectLiquidHBD(select: false)
+        selectDeclinePayout(select: true)
+        selectsbdSPPaySystem(select: false)
+        selectfullPaySystem(select: false)
+    }
+    
+    @IBAction func liquidHBDBtnTapped(_ sender: Any) {
+        isLiquidSPSelected = true
+        isDeclinePayoutSelected = false
+        is100SPSelected = false
+        self.isSbdSPPaySystemSelected = false
+        selectLiquidHBD(select: true)
+        selectDeclinePayout(select: false)
+        selectsbdSPPaySystem(select: false)
+        selectfullPaySystem(select: false)
+    }
+    
+    func logout() {
+        User.deleteCurrentUser()
+        if let appDelegate = UIApplication.shared.delegate as? AFAppDelegate {
+            let loginVC = UIStoryboard(name: "Login", bundle: nil).instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
+            appDelegate.window?.rootViewController = loginVC
+            appDelegate.window?.makeKeyAndVisible()
+           
+               }
+    }
     
     fileprivate func updateLanguage(_ index: Int) {
         if index == 0{
@@ -383,8 +478,8 @@ class SettingsVC: UIViewController {
             self.notification = true
             
             self.notificationsStack.isHidden = false
-            self.heightConstraintForNotificationView.constant = 286
-            mainContainerInScrollViewHeightConstraint.constant = 1000 + 203
+            self.heightConstraintForNotificationView.constant = CGFloat(Double(self.notifications.count * 35) + 83.5)
+           //mainContainerInScrollViewHeightConstraint.constant = 1000 + 203
         }
         
     }
@@ -396,7 +491,7 @@ class SettingsVC: UIViewController {
        
         self.notificationsStack.isHidden = true
         self.heightConstraintForNotificationView.constant = 83.5
-        mainContainerInScrollViewHeightConstraint.constant = 900
+     //   mainContainerInScrollViewHeightConstraint.constant = 900
     }
     
     
@@ -417,15 +512,25 @@ class SettingsVC: UIViewController {
     
     @IBAction func sbdSPPaySystemBtnAction(_ sender : UIButton) {
         self.isSbdSPPaySystemSelected = true
+        isLiquidSPSelected = false
+        isDeclinePayoutSelected = false
+        self.is100SPSelected = false
         self.selectsbdSPPaySystem(select: true)
         self.selectfullPaySystem(select: false)
+        selectLiquidHBD(select: false)
+        selectDeclinePayout(select: false)
         UserDefaults.standard.set(false, forKey: "isSbdSPPaySystemSelected")
     }
     
     @IBAction func fullSPaySystemBtnAction(_ sender : UIButton) {
         self.isSbdSPPaySystemSelected = false
+        isLiquidSPSelected = false
+        isDeclinePayoutSelected = false
+        self.is100SPSelected = true
         self.selectsbdSPPaySystem(select: false)
         self.selectfullPaySystem(select: true)
+        selectLiquidHBD(select: false)
+        selectDeclinePayout(select: false)
         UserDefaults.standard.set(true, forKey: "isSbdSPPaySystemSelected")
     }
     
@@ -513,9 +618,9 @@ class SettingsVC: UIViewController {
         
          if let settings = self.settings {
              
-             settings.update(measurementSystem: self.isMetricSystemSelected ? .metric : .us, isDonatingCharity: self.isDonateToCharitySelected, charityName: charityName, charityDisplayName: charityDisplayName, isDeviceSensorSystemSelected: self.isDeviceSensorSystemSelected,isSbdSPPaySystemSelected: self.isSbdSPPaySystemSelected,isReminderSelected: self.isReminderSelected, fitBitMeasurement: self.fitBitMeasurement, appVersion: UIApplication.appVersion!, notificationSelected: self.notification, hiveChainSelected: self.chain, steemChainSelected: self.steemChain, blurtChainSelected: self.blurtChain)
+             settings.update(measurementSystem: self.isMetricSystemSelected ? .metric : .us, isDonatingCharity: self.isDonateToCharitySelected, charityName: charityName, charityDisplayName: charityDisplayName, isDeviceSensorSystemSelected: self.isDeviceSensorSystemSelected,isSbdSPPaySystemSelected: self.isSbdSPPaySystemSelected,isReminderSelected: self.isReminderSelected, fitBitMeasurement: self.fitBitMeasurement, appVersion: UIApplication.appVersion!, notificationSelected: self.notification, hiveChainSelected: self.chain, steemChainSelected: self.steemChain, blurtChainSelected: self.blurtChain, isLiquidHBDSelected: self.isLiquidSPSelected, isDeclinePayoutSelected: self.isDeclinePayoutSelected, is100PSelected: is100SPSelected)
          } else {
-             Settings.saveWith(info: [SettingsKeys.measurementSystem : (self.isMetricSystemSelected ? MeasurementSystem.metric.rawValue : MeasurementSystem.us.rawValue), SettingsKeys.isDonatingCharity : false, SettingsKeys.charityName :  charityName, SettingsKeys.charityDisplayName : charityDisplayName, SettingsKeys.datasource: isDeviceSensorSystemSelected, SettingsKeys.postpayout : isSbdSPPaySystemSelected, SettingsKeys.reminder : isReminderSelected, SettingsKeys.fitBitMeasurement : fitBitMeasurement,SettingsKeys.AppVersion:UIApplication.appVersion!, SettingsKeys.notifications: self.notification, SettingsKeys.hiveChain: self.chain, SettingsKeys.steemChain: self.steemChain, SettingsKeys.blurtChain: self.blurtChain])
+             Settings.saveWith(info: [SettingsKeys.measurementSystem : (self.isMetricSystemSelected ? MeasurementSystem.metric.rawValue : MeasurementSystem.us.rawValue), SettingsKeys.isDonatingCharity : false, SettingsKeys.charityName :  charityName, SettingsKeys.charityDisplayName : charityDisplayName, SettingsKeys.datasource: isDeviceSensorSystemSelected, SettingsKeys.postpayout : isSbdSPPaySystemSelected, SettingsKeys.reminder : isReminderSelected, SettingsKeys.fitBitMeasurement : fitBitMeasurement,SettingsKeys.AppVersion:UIApplication.appVersion!, SettingsKeys.notifications: self.notification, SettingsKeys.hiveChain: self.chain, SettingsKeys.steemChain: self.steemChain, SettingsKeys.blurtChain: self.blurtChain, SettingsKeys.isLiquidHBD: self.isLiquidSPSelected, SettingsKeys.isDeclinePayment: self.isDeclinePayoutSelected, SettingsKeys.is100SP: self.is100SPSelected])
          }
          
          self.showAlertWithOkCompletion(title: nil, message: "Settings has been saved") { (cl) in
@@ -560,32 +665,55 @@ class SettingsVC: UIViewController {
         UIApplication.shared.scheduleLocalNotification(notification)
     
     }
-    
+    //Notification types
     func setNotificationView(){
         if notifications.count != 0 {
-            for i in 0 ..< notifications.count{
-                if i == 0{
-                    firstNotificationLbl.text = notifications[i].name
-                }
-                else if i == 1{
-                    secondNotificationLbl.text = notifications[i].name
-                }
-                else if i == 2{
-                    thirdnotificationLbl.text = notifications[i].name
-                }
-                else if i == 3{
-                    forthnotificationLbl.text = notifications[i].name
-                }
-                else if i == 4{
-                    fifthNotificationLbl.text = notifications[i].name
-                }
-                else if i == 5{
-                    sixthNotificationLbl.text = notifications[i].name
-                }
-            }
+           // setNotificationSections()
+
         }
         
     }
+    
+    
+    private func generateNotificationSections() {
+        self.heightConstraintForNotificationView.constant = CGFloat(Double(self.notifications.count * 35) + 83.5)
+        notificationStackView.spacing  = 2.5
+      
+                    notifications.forEach { element in
+                        let customView = createCustomView(notification: element)
+                                self.notificationStackView.addArrangedSubview(customView)
+
+                        }
+        
+
+    }
+    
+    @IBAction func seventhNotificationBtnTapped(_ sender: UIButton) {
+        sender.isSelected = !sender.isSelected
+        self.isSeventhNotificationSelected = sender.isSelected
+        self.seventhNotificationBtn.layer.borderColor = sender.isSelected ? UIColor.clear.cgColor :  UIColor.darkGray.cgColor
+        self.seventhNotificationBtn.layer.borderWidth = sender.isSelected ? 0.0 : 2.0
+        if sender.isSelected {
+            self.seventhNotificationBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+            self.seventhNotificationBtn.tintColor = ColorTheme
+        } else {
+            self.seventhNotificationBtn.setImage(nil, for: .normal)
+        }
+    }
+    
+    @IBAction func eightNotificationBtnTapped(_ sender: UIButton) {
+        sender.isSelected = !sender.isSelected
+        self.isEigthNotificationSelected = sender.isSelected
+        self.eightNotificationBtn.layer.borderColor = sender.isSelected ? UIColor.clear.cgColor :  UIColor.darkGray.cgColor
+        self.eightNotificationBtn.layer.borderWidth = sender.isSelected ? 0.0 : 2.0
+        if sender.isSelected {
+            self.eightNotificationBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+            self.eightNotificationBtn.tintColor = ColorTheme
+        } else {
+            self.eightNotificationBtn.setImage(nil, for: .normal)
+        }
+    }
+    
     
     @IBAction func firstNotificationBtnAction(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
@@ -667,6 +795,8 @@ class SettingsVC: UIViewController {
     
     
     func applyFinihingTouchToUIElements() {
+        logoutButton.layer.cornerRadius = 2
+        logoutButton.clipsToBounds = true
         self.saveSettingsBtn.layer.cornerRadius = 2.0
         self.showCharityBtn.layer.cornerRadius = 2.0
         self.backBtn.setImage(#imageLiteral(resourceName: "back_black").withRenderingMode(.alwaysTemplate), for: .normal)
@@ -680,7 +810,17 @@ class SettingsVC: UIViewController {
         
         self.fullPayDotView.backgroundColor = ColorTheme
         self.sbdSPPayDotView.backgroundColor = ColorTheme
+        declinePayoutDotView.backgroundColor = ColorTheme
         
+//        liquidHBDBtn.layer.cornerRadius = liquidHBDBtn.frame.size.width / 2
+//        liquidHBDBtn.layer.borderWidth = 2
+//        liquidHBDBtn.layer.borderColor = ColorTheme.cgColor
+//
+//        declinePayoutBtn.layer.borderColor = ColorTheme.cgColor
+//        declinePayoutBtn.layer.cornerRadius = declinePayoutBtn.frame.size.width / 2
+//        declinePayoutBtn.layer.borderWidth = 2
+//
+        liquidDotView.backgroundColor = ColorTheme
         metricMeasurementSystemBtn.layer.cornerRadius = metricMeasurementSystemBtn.frame.size.width / 2
         USMeasurementSystemBtn.layer.cornerRadius = USMeasurementSystemBtn.frame.size.width / 2
         
@@ -689,6 +829,9 @@ class SettingsVC: UIViewController {
         
         fullPaySystemBtn.layer.cornerRadius = fullPaySystemBtn.frame.size.width / 2
         sbdSPPaySystemBtn.layer.cornerRadius = sbdSPPaySystemBtn.frame.size.width / 2
+        
+        liquidHBDBtn.layer.cornerRadius = liquidHBDBtn.frame.size.width / 2
+        declinePayoutBtn.layer.cornerRadius = liquidHBDBtn.frame.size.width / 2
         
         metricDotView.layer.cornerRadius = metricDotView.frame.size.width / 2
         usDotView.layer.cornerRadius = usDotView.frame.size.width / 2
@@ -712,8 +855,11 @@ class SettingsVC: UIViewController {
         fitBitDotView.layer.cornerRadius = fitBitDotView.frame.size.width / 2
         
         fullPayDotView.layer.cornerRadius = fullPayDotView.frame.size.width / 2
+        fullPayDotView.clipsToBounds = true
         sbdSPPayDotView.layer.cornerRadius = sbdSPPayDotView.frame.size.width / 2
         
+        liquidDotView.layer.cornerRadius = liquidDotView.frame.size.width / 2
+        declinePayoutDotView.layer.cornerRadius = declinePayoutDotView.frame.size.width / 2
         self.hiveChainButton.layer.borderColor = UIColor.darkGray.cgColor
         self.hiveChainButton.layer.borderWidth = 2.0
         self.hiveChainButton.layer.cornerRadius = 2.0
@@ -747,6 +893,14 @@ class SettingsVC: UIViewController {
         self.sixthNotificationBtn.layer.borderWidth = 2.0
         self.sixthNotificationBtn.layer.cornerRadius = 2.0
         
+        self.seventhNotificationBtn.layer.borderColor = UIColor.darkGray.cgColor
+        self.seventhNotificationBtn.layer.borderWidth = 2.0
+        self.seventhNotificationBtn.layer.cornerRadius = 2.0
+        
+        self.eightNotificationBtn.layer.borderColor = UIColor.darkGray.cgColor
+        self.eightNotificationBtn.layer.borderWidth = 2.0
+        self.eightNotificationBtn.layer.cornerRadius = 2.0
+        
         self.remindBtn.layer.borderColor = UIColor.darkGray.cgColor
         self.remindBtn.layer.borderWidth = 2.0
         self.remindBtn.layer.cornerRadius = 2.0
@@ -766,8 +920,10 @@ class SettingsVC: UIViewController {
         selectMetricSystem(select: self.isMetricSystemSelected)
         selectUSSystem(select: !self.isMetricSystemSelected)
         
-        selectfullPaySystem(select: !isSbdSPPaySystemSelected)
-        selectsbdSPPaySystem(select: isSbdSPPaySystemSelected)
+        selectfullPaySystem(select: settings?.is100SPSelected ?? false)
+        selectsbdSPPaySystem(select: settings?.isSbdSPPaySystemSelected ?? false)
+        selectLiquidHBD(select: settings?.isLiquidHBDSelected ?? false)
+        selectDeclinePayout(select: settings?.isDeclinePayoutSelected ?? false)
         
         selectDeviceSensorSystem(select: isDeviceSensorSystemSelected)
         selectFitBitSystem(select: !isDeviceSensorSystemSelected)
@@ -893,7 +1049,7 @@ class SettingsVC: UIViewController {
     
     func selectDeviceSensorSystem(select : Bool) {
         if select{
-            mainContainerInScrollViewHeightConstraint.constant = 900 + 203
+            //mainContainerInScrollViewHeightConstraint.constant = 900 + 203
         }
         
         self.deviceSensortSystemBtn.layer.borderColor = select ? ColorTheme.cgColor : UIColor.darkGray.cgColor
@@ -905,7 +1061,7 @@ class SettingsVC: UIViewController {
     
     func selectFitBitSystem(select : Bool) {
         if select{
-                mainContainerInScrollViewHeightConstraint.constant = 1000
+           //     mainContainerInScrollViewHeightConstraint.constant = 1000
         }
         
         self.fitBitSystemBtn.layer.borderColor = select ? ColorTheme.cgColor : UIColor.darkGray.cgColor
@@ -922,6 +1078,29 @@ class SettingsVC: UIViewController {
         self.sbdSPPaySystemBtnDotViewHeightConstraint.constant = select ? 10 : 0.0
         self.view.layoutIfNeeded()
     }
+    
+    func selectLiquidHBD(select : Bool) {
+
+      //  is100SPSelected = false
+        self.liquidHBDBtn.layer.borderColor = select ? ColorTheme.cgColor : UIColor.darkGray.cgColor
+        self.liquidHBDBtn.layer.borderWidth = 2.0
+        liquidDotView.isHidden  = !select
+        //self.sbdSPPaySystemBtnDotViewWidthConstraint.constant = select ? 10 : 0.0
+       // self.sbdSPPaySystemBtnDotViewHeightConstraint.constant = select ? 10 : 0.0
+        self.view.layoutIfNeeded()
+    }
+    
+    func selectDeclinePayout(select : Bool) {
+
+       // is100SPSelected = false
+        self.declinePayoutBtn.layer.borderColor = select ? ColorTheme.cgColor : UIColor.darkGray.cgColor
+        self.declinePayoutBtn.layer.borderWidth = 2.0
+        declinePayoutDotView.isHidden  = !select
+        //self.sbdSPPaySystemBtnDotViewWidthConstraint.constant = select ? 10 : 0.0
+       // self.sbdSPPaySystemBtnDotViewHeightConstraint.constant = select ? 10 : 0.0
+        self.view.layoutIfNeeded()
+    }
+    
     
     func selectfullPaySystem(select : Bool) {
         self.fullPaySystemBtn.layer.borderColor = select ? ColorTheme.cgColor : UIColor.darkGray.cgColor
@@ -940,7 +1119,7 @@ class SettingsVC: UIViewController {
     
     func loadCharities() {
         ActifitLoader.show(title: Messages.loading_charities, animated: true)
-        APIMaster.getCharities(completion: { [weak self] (jsonString) in
+        APIMaster.getCharities(completion: { [weak self] (jsonString, _ ) in
             DispatchQueue.main.async(execute: {
                 ActifitLoader.hide()
             })
@@ -950,14 +1129,13 @@ class SettingsVC: UIViewController {
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
                     if let jsonArray = (json as? [[String : Any]]){
                         self?.charities = jsonArray.map({Charity.init(info: $0)})
+                        self?.fillDefaultCharity()
                     }
                 } catch {
                     print("unable to fetch charities")
                 }
             }
-            DispatchQueue.main.async(execute: {
-                //self?.getUserSettings()
-            })
+          
             
         }) { (error) in
             DispatchQueue.main.async(execute: {
@@ -969,12 +1147,17 @@ class SettingsVC: UIViewController {
         }
     }
     
+    private func fillDefaultCharity() {
+        
+    }
+    
     func getNotifications(){
         //ActifitLoader.show(title: Messages.loading_notifications, animated: true)
-        APIMaster.getNotifications(completion: { [weak self] (jsonString) in
+        APIMaster.getNotifications(completion: { [weak self] (jsonString, _ ) in
             DispatchQueue.main.async(execute: {
                 ActifitLoader.hide()
             })
+            self?.getUserSettings()
             if let jsonString = jsonString as? String {
                 let data = jsonString.utf8Data()
                 do {
@@ -1005,198 +1188,182 @@ class SettingsVC: UIViewController {
         
     }
     
-    func getUserSettings() {
-       // ActifitLoader.show(title: Messages.loading_userSettings, animated: true)
-        APIMaster.getUserSettings(params: User.current()!.steemit_username, completion: { [weak self] (jsonString) in
-            DispatchQueue.main.async(execute: {
-                ActifitLoader.hide()
-            })
-            if let jsonString = jsonString as? String {
-                let data = jsonString.utf8Data()
-                do {
-                    let json = try JSONSerialization.jsonObject(with: data, options: [])
-                    if let jsonArray = (json as? NSDictionary){
-                        if let settings = jsonArray.value(forKey: "settings") as? NSDictionary{
-                        DispatchQueue.main.async(execute: { [self] in
-                           // ActifitLoader.showLoaderStatusImage(sourceVC: self, navigateBack: false , success: true, status: Messages.updatedSettings)
-                           // ActifitLoader.delegate = self as? SwiftLoaderDismissDelegate
-                            
-                            if settings.value(forKey: "notifications_active") as! Bool == true{
-                                UIApplication.shared.registerForRemoteNotifications()
-                                UserDefaults.standard.setValue(true, forKey: "notifications")
-
-                                self!.enableNotifications(select: true)
-                                self!.disableNotifications(select: false)
-                                self!.notification = true
-                                self!.notificationsStack.isHidden = false
-                                self!.heightConstraintForNotificationView.constant = 286
-                                self!.mainContainerInScrollViewHeightConstraint.constant = 1000 + 203
-                                if settings.value(forKey: "common") != nil{
-                                    if (settings.value(forKey: "common") as? Bool == true){
-                                        self!.firstNotificationBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                        self!.firstNotificationBtn.tintColor = ColorTheme
-                                        self?.isFirstNotificationSelected = true
-                                        self?.firstNotificationBtn.isSelected = true
-                                        
-                                        
-                                    } else {
-                                        self!.firstNotificationBtn.setImage(nil, for: .normal)
-                                        self?.isFirstNotificationSelected = false
-                                        self?.firstNotificationBtn.isSelected = false
-                                        
-                                        
-                                    }
-                                }
-                                if settings.value(forKey: "ticket") != nil{
-                                    if (settings.value(forKey: "ticket") as! Bool == true){
-                                        self!.secondNotificationBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                        self!.secondNotificationBtn.tintColor = ColorTheme
-                                        self?.isSecondNotificationSelected = true
-                                        self?.secondNotificationBtn.isSelected = true
-                                        
-                                        
-                                    } else {
-                                        self!.secondNotificationBtn.setImage(nil, for: .normal)
-                                        self?.isSecondNotificationSelected = false
-                                        self?.secondNotificationBtn.isSelected = false
-                                        
-                                        
-                                    }
-                                }
-                                if settings.value(forKey: "post") != nil{
-                                    if (settings.value(forKey: "post") as! Bool == true){
-                                        self!.fifthNotificationBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                        self!.fifthNotificationBtn.tintColor = ColorTheme
-                                        self?.isFifthNotificationSelected = true
-                                        self?.fifthNotificationBtn.isSelected = true
-                                        
-                                        
-                                    } else {
-                                        self!.fifthNotificationBtn.setImage(nil, for: .normal)
-                                        self?.isFifthNotificationSelected = false
-                                        self?.fifthNotificationBtn.isSelected = false
-                                        
-                                        
-                                    }
-                                }
-                                if settings.value(forKey: "payment") != nil{
-                                    if (settings.value(forKey: "payment") as! Bool == true){
-                                        self!.forthNotificationBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                        self!.forthNotificationBtn.tintColor = ColorTheme
-                                        self?.isForthNotificationSelected = true
-                                        self?.forthNotificationBtn.isSelected = true
-                                        
-                                        
-                                    } else {
-                                        self!.forthNotificationBtn.setImage(nil, for: .normal)
-                                        self?.isForthNotificationSelected = false
-                                        self?.forthNotificationBtn.isSelected = false
-                                        
-                                        
-                                    }
-                                }
-                                if settings.value(forKey: "comment") != nil{
-                                    if (settings.value(forKey: "comment") as! Bool == true){
-                                        self!.sixthNotificationBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                        self!.sixthNotificationBtn.tintColor = ColorTheme
-                                        self?.isSixthNotificationSelected = true
-                                        self?.sixthNotificationBtn.isSelected = true
-                                        
-                                        
-                                    } else {
-                                        self!.sixthNotificationBtn.setImage(nil, for: .normal)
-                                        self?.isSixthNotificationSelected = false
-                                        self?.sixthNotificationBtn.isSelected = false
-                                        
-                                        
-                                    }
-                                }
-                                if settings.value(forKey: "friendship") != nil{
-                                    if (settings.value(forKey: "friendship") as! Bool == true){
-                                        self!.thirdNotificationBtn.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                        self!.thirdNotificationBtn.tintColor = ColorTheme
-                                        self?.isThirdNotificationSelected = true
-                                        self?.thirdNotificationBtn.isSelected = true
-                                        
-                                        
-                                    } else {
-                                        self!.thirdNotificationBtn.setImage(nil, for: .normal)
-                                        self?.isThirdNotificationSelected = true
-                                        self?.thirdNotificationBtn.isSelected = true
-                                        
-                                        
-                                    }
-                                }
-                                
-                                
-                            }
-                            else if settings.value(forKey: "notifications_active") as! Bool == false{
-                                UIApplication.shared.unregisterForRemoteNotifications()
-                                UserDefaults.standard.setValue(false, forKey: "notifications")
-                                self!.enableNotifications(select: false)
-                                self!.disableNotifications(select: true)
-                                self!.notification = false
-                                self!.notificationsStack.isHidden = true
-                                self!.heightConstraintForNotificationView.constant = 83.5
-                                self!.mainContainerInScrollViewHeightConstraint.constant = 900
-                                
-                            }
-                            
-                       
-                            if let postTarget = settings.value(forKey: "post_target_bchain") as? String{
-                                if (settings.value(forKey: "post_target_bchain") as! String == "HIVE"){
-                                
-                                
-                            }
-                                else if settings.value(forKey: "post_target_bchain") as! String == "HIVE|Blurt"{
-                               // self!.blurtChain(select: true)
-                               // self!.steamChain(select: false)
-                                    self?.blurtChainButton.isSelected = true
-                                    self?.blurtChainButton.layer.borderWidth = 0.0
-                                    self?.blurtChainButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                    self?.blurtChainButton.tintColor = ColorTheme
-                                self!.blurtChain = "Blurt"
-                            }
-                                else if settings.value(forKey: "post_target_bchain") as! String == "HIVE|Steem"{
-                              //  self!.blurtChain(select: false)
-                              //  self!.steamChain(select: true)
-                                    self?.steamChainButton.isSelected = true
-                                    self?.steamChainButton.layer.borderWidth = 0.0
-                                    self?.steamChainButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                    self?.steamChainButton.tintColor = ColorTheme
-                                self!.steemChain = "Steem"
-                            }
-                                else if settings.value(forKey: "post_target_bchain") as! String == "HIVE|Steem|Blurt"{
-                              //  self!.blurtChain(select: false)
-                              //  self!.steamChain(select: true)
-                                    self?.steamChainButton.isSelected = true
-                                    self?.steamChainButton.layer.borderWidth = 0.0
-                                    self?.steamChainButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                    self?.steamChainButton.tintColor = ColorTheme
-                                self!.steemChain = "Steem"
-                                    self?.blurtChainButton.isSelected = true
-                                    self?.blurtChainButton.layer.borderWidth = 0.0
-                                    self?.blurtChainButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
-                                    self?.blurtChainButton.tintColor = ColorTheme
-                                self!.blurtChain = "Blurt"
-                            }
-                                
-                            }
-                            
-                        
-                        })}}
-                } catch {
-                    print("unable to user settings")
+    private func setNotificationSections(settings: NSDictionary) {
+//        notificationStackView.spacing  = 5
+        settings.forEach { element in
+            if let value = element.key as? String {
+                for notification in self.notifications {
+                    if notification.category == value, let status = element.value as? Bool {
+                       // notification.isSelected = status
+                            notification.changeSelection(selected: status)
+                    }
                 }
             }
-        }) { (error) in
-            DispatchQueue.main.async(execute: {
-                ActifitLoader.hide()
-            })
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                self.showAlertWith(title: nil, message: error.localizedDescription)
-            })
+//
         }
+        generateNotificationSections()
+     //   print(notifications.filter {$0.isSelected == true})
+    }
+    
+    
+    func createCustomView(notification: NotificationServer) -> UIView {
+         let customView = UIView()
+         customView.translatesAutoresizingMaskIntoConstraints = false
+         customView.heightAnchor.constraint(equalToConstant: 30).isActive = true
+         let label = UILabel()
+         label.text = notification.name
+         label.translatesAutoresizingMaskIntoConstraints = false
+         let button = UIButton()
+         button.addTarget(self, action: #selector(buttonTapped(sender:)), for: .touchUpInside)
+        button.heightAnchor.constraint(equalToConstant: 25).isActive = true
+        button.widthAnchor.constraint(equalToConstant: 25).isActive = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.layer.borderColor =   UIColor.darkGray.cgColor
+        button.layer.borderWidth =   2.0
+        button.tintColor = .white
+        button.tag = notification.category.hashValue
+        if notification.isSelected {
+            button.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+            button.tintColor = .white
+            button.backgroundColor = .primaryRedColor()
+        } else {
+            button.backgroundColor = .white
+            button.setImage(nil, for: .normal)
+        }
+         
+         // Add label and button to the customView
+         customView.addSubview(label)
+         customView.addSubview(button)
+        NSLayoutConstraint.activate([
+            button.leadingAnchor.constraint(equalTo: customView.leadingAnchor, constant: 5),
+            button.centerYAnchor.constraint(equalTo: customView.centerYAnchor),
+        ])
+
+         // Layout constraints for label
+         NSLayoutConstraint.activate([
+             label.leadingAnchor.constraint(equalTo: button.trailingAnchor, constant: 5),
+             label.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+         ])
+
+         // Layout constraints for button
+       
+
+         return customView
+     }
+     
+    @objc func buttonTapped(sender: UIButton) {
+        let notSelected = sender.currentImage
+        let notification = self.notifications.first { $0.category.hashValue == sender.tag }
+       
+       // sender.layer.borderColor = notSelected != nil ? UIColor.clear.cgColor :  UIColor.darkGray.cgColor
+        //sender.layer.borderWidth =  notSelected != nil ? 0.0 : 2.0
+        if notSelected == nil {
+            sender.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+            sender.tintColor = .white
+            sender.backgroundColor = .primaryRedColor()
+        } else {
+            sender.backgroundColor = .white
+            sender.setImage(nil, for: .normal)
+        }
+        guard notification != nil else  {return }
+        notification!.changeSelection(selected: !notification!.isSelected)
+        
+       // sender.isSelected.toggle()
+    }
+    
+
+    func getUserSettings() {
+            // ActifitLoader.show(title: Messages.loading_userSettings, animated: true)
+            APIMaster.getUserSettings(params: User.current()!.steemit_username, completion: { [weak self] (jsonString, _ ) in
+                guard let self = self else {return}
+                DispatchQueue.main.async(execute: {
+                    ActifitLoader.hide()
+                })
+                if let jsonString = jsonString as? String {
+                    let data = jsonString.utf8Data()
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: [])
+                        if let jsonArray = (json as? NSDictionary){
+                            if let settings = jsonArray.value(forKey: "settings") as? NSDictionary{
+                                
+                                DispatchQueue.main.async {
+                                    
+                                
+                                  
+                                    self.setNotificationSections(settings: settings)
+                                 //TODO: refresh the notification with selected or not
+                                    if settings.value(forKey: "notifications_active") as! Bool == true{
+                                        UIApplication.shared.registerForRemoteNotifications()
+                                        UserDefaults.standard.setValue(true, forKey: "notifications")
+                                        self.enableNotifications(select: true)
+                                        self.disableNotifications(select: false)
+                                        self.notification = true
+                                        self.notificationsStack.isHidden = false
+                                       
+
+                                        }
+
+
+                                    if let postTarget = settings.value(forKey: "post_target_bchain") as? String{
+                                        if (settings.value(forKey: "post_target_bchain") as! String == "HIVE"){
+
+
+                                        }
+                                        else if settings.value(forKey: "post_target_bchain") as! String == "HIVE|Blurt"{
+                                            // self!.blurtChain(select: true)
+                                            // self!.steamChain(select: false)
+                                            self.blurtChainButton.isSelected = true
+                                            self.blurtChainButton.layer.borderWidth = 0.0
+                                            self.blurtChainButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+                                            self.blurtChainButton.tintColor = ColorTheme
+                                            self.blurtChain = "Blurt"
+                                        }
+                                        else if settings.value(forKey: "post_target_bchain") as! String == "HIVE|Steem"{
+                                            //  self!.blurtChain(select: false)
+                                            //  self!.steamChain(select: true)
+                                            self.steamChainButton.isSelected = true
+                                            self.steamChainButton.layer.borderWidth = 0.0
+                                            self.steamChainButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+                                            self.steamChainButton.tintColor = ColorTheme
+                                            self.steemChain = "Steem"
+                                        }
+                                        else if settings.value(forKey: "post_target_bchain") as! String == "HIVE|Steem|Blurt"{
+                                            //  self!.blurtChain(select: false)
+                                            //  self!.steamChain(select: true)
+                                            self.steamChainButton.isSelected = true
+                                            self.steamChainButton.layer.borderWidth = 0.0
+                                            self.steamChainButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+                                            self.steamChainButton.tintColor = ColorTheme
+                                            self.steemChain = "Steem"
+                                            self.blurtChainButton.isSelected = true
+                                            self.blurtChainButton.layer.borderWidth = 0.0
+                                            self.blurtChainButton.setImage(#imageLiteral(resourceName: "check").withRenderingMode(.alwaysTemplate), for: .normal)
+                                            self.blurtChainButton.tintColor = ColorTheme
+                                            self.blurtChain = "Blurt"
+                                        }
+                                        
+                                    }
+                                    
+                                    
+                                }
+                               // )
+                                
+                            }
+                            
+                        }
+                    } catch {
+                        print("unable to user settings")
+                    }
+                }
+            }) { (error) in
+                DispatchQueue.main.async(execute: {
+                    ActifitLoader.hide()
+                })
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                    self.showAlertWith(title: nil, message: error.localizedDescription)
+                })
+            }
+        
     }
     
     func checkLoginAuth(){
@@ -1226,7 +1393,8 @@ class SettingsVC: UIViewController {
         json["loginsource"] = "ios"
         
        // ActifitLoader.show(title: Messages.loginMessage, animated: true)
-        APIMaster.checkLogin(info: json, completion: { [weak self] (jsonString) in
+        APIMaster.checkLogin(info: json, completion: { [weak self] (jsonString, _ ) in
+            guard let self = self else { return }
            DispatchQueue.main.async(execute: {
                ActifitLoader.hide()
            })
@@ -1239,13 +1407,11 @@ class SettingsVC: UIViewController {
                        UserDefaults.standard.setValue(jsonArray.value(forKey:"token"), forKey: "authToken")
                        print("Auth Token From login = \(jsonArray.value(forKey:"token"))")
                        
-                       DispatchQueue.main.async(execute: {
-                           self?.getUserSettings()
-                           self?.getNotifications()
-                          // ActifitLoader.showLoaderStatusImage(sourceVC: self, navigateBack: false , success: true, status: Messages.loginMessage)
-                          // ActifitLoader.delegate = self as? SwiftLoaderDismissDelegate
-                           
-                       })
+                       DispatchQueue.main.async {
+                          
+                           self.getNotifications()
+                       }
+
 
                    }
                } catch {
@@ -1290,60 +1456,13 @@ class SettingsVC: UIViewController {
         json["notifications_active"] = self.notification
             UserDefaults.standard.setValue(self.notification, forKey: "notifications")
         for i in 0 ..< notifications.count{
-            if i == 0{
-                if (isFirstNotificationSelected){
-                    json[notifications[i].category] = true
-                }
-                else{
-                    json[notifications[i].category] = false
-                }
+            if notifications[i].isSelected {
+                json[notifications[i].category] = true
             }
-            if i == 1{
-                if (isSecondNotificationSelected){
-                    json[notifications[i].category] = true
-                }
-                else{
-                    json[notifications[i].category] = false
-                }
-            }
-            if i == 2{
-                if (isThirdNotificationSelected){
-                    json[notifications[i].category] = true
-                }
-                else{
-                    json[notifications[i].category] = false
-                }
-            }
-            if i == 3{
-                if (isForthNotificationSelected){
-                    json[notifications[i].category] = true
-                }
-                else{
-                    json[notifications[i].category] = false
-                }
-            }
-            if i == 4{
-                if (isFifthNotificationSelected){
-                    json[notifications[i].category] = true
-                }
-                else{
-                    json[notifications[i].category] = false
-                }
-            }
-            if i == 5{
-                if (isSixthNotificationSelected){
-                    json[notifications[i].category] = true
-                }
-                else{
-                    json[notifications[i].category] = false
-                }
-            }
-            
-            
         }
         
        // ActifitLoader.show(title: Messages.loading_userSettings, animated: true)
-        APIMaster.updateUserSettings(username: User.current()!.steemit_username, settings: json, completion: { [weak self] (jsonString) in
+        APIMaster.updateUserSettings(username: User.current()!.steemit_username, settings: json, completion: { [weak self] (jsonString, _ ) in
             DispatchQueue.main.async(execute: {
                 ActifitLoader.hide()
             })

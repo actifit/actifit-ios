@@ -40,7 +40,7 @@ class HistoryChartVC: UIViewController,ChartViewDelegate {
         xAxis.valueFormatter = DayAxisValueFormatter(chart: barChart, labels: labels) as! AxisValueFormatter
         
         let line = ChartLimitLine(limit: 5000, label: "Min Reward - 5K Activity")
-        line.lineColor = .red
+        line.lineColor = .primaryRedColor()
         line.valueTextColor = .black
         line.valueFont = .systemFont(ofSize: 10)
         line.lineWidth = 4
