@@ -8,7 +8,7 @@
 
 import UIKit
 import ObjectiveC
-
+import Foundation
 private struct AssociatedKeys {
     static var KeyIndexPath    = "IndexPath"
     static var KeyIdentifier   = "Identifier"

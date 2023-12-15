@@ -41,6 +41,18 @@ extension Date {
         return formatter.string(from: self)
     }
     
+    func getTodaysDateWithMonthAndDay() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "E, MMM d, yyyy"
+        return dateFormatter.string(from: Date())
+    }
+    
+    func getTodaysDateYearAndMonthAndDay() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter.string(from: Date())
+    }
+    
  
     func dayAfter () -> Date {
             let oneDay:Double = 60 * 60 * 24
@@ -63,5 +75,54 @@ extension Date {
 
         return cal.date(from: components)
     }
-   
+    
+    func currentDay() -> String {
+           let dateFormatter = DateFormatter()
+           dateFormatter.dateFormat = "dd"
+           
+           return dateFormatter.string(from: self)
+       }
+    
+    static func convertServerDateString(_ dateString: String) -> String? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+
+        if let date = dateFormatter.date(from: dateString) {
+            let outputDateFormatter = DateFormatter()
+            outputDateFormatter.dateFormat = "yyyy-MM-dd"
+            return outputDateFormatter.string(from: date)
+        } else {
+            return nil
+        }
+    }
+    
+    func compareDates(dateString1: String, dateString2: String) -> ComparisonResult? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        
+        if let date1 = dateFormatter.date(from: dateString1),
+           let date2 = dateFormatter.date(from: dateString2) {
+            return date1.compare(date2)
+        }
+        
+        return nil // Return nil in case of invalid date strings
+    }
+    
+    func dateDifferenceByNumberOfDates(startDate: String, endDate: String) -> Int? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+
+        if let startDate = dateFormatter.date(from: startDate),
+           let endDate = dateFormatter.date(from: endDate) {
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.day], from: startDate, to: endDate)
+            return components.day
+        }
+        
+        return nil  // Return nil if date parsing fails
+    }
+    
+    
 }
+   
+

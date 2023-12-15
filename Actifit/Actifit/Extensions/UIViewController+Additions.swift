@@ -129,7 +129,7 @@ extension UIViewController {
                 cancelClickedCompletion!(true)
             }
         }
-        cancelAction.setValue(UIColor.red, forKey: "titleTextColor")
+        cancelAction.setValue(UIColor.primaryRedColor, forKey: "titleTextColor")
         
         actionSheetController.addAction(takePhotoAction)
         actionSheetController.addAction(choosePhotoAction)
@@ -144,7 +144,8 @@ extension UIViewController {
         }
         return actionSheetController
     }
-    
+   // extension UIViewController{
+
    
 }
 
