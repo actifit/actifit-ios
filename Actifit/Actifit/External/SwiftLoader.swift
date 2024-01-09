@@ -65,7 +65,10 @@ public class SwiftLoader: UIView {
                 print("No!")
             }
         
-        let currentWindow : UIWindow = UIApplication.shared.keyWindow!
+        if let currentWindow = UIApplication.shared.keyWindow {
+            // The keyWindow is not nil, you can proceed with your code here.
+            // ...
+       
 
         tapGestureRecognizer = UITapGestureRecognizer.init(target: self, action: #selector(handleTap))
         tapGestureRecognizer?.numberOfTapsRequired = 1
@@ -95,6 +98,10 @@ public class SwiftLoader: UIView {
             currentWindow.addSubview(loader.coverView!)
             currentWindow.addSubview(loader)
             loader.start()
+        }
+        } else {
+            // Handle the case where the keyWindow is nil, such as displaying an error message or taking an alternative action.
+            print("Error: The keyWindow is nil.")
         }
     }
     
