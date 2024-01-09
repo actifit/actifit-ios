@@ -50,7 +50,7 @@ class AFTextField: UITextField {
     
     
     private func highlightLineLabel()  {
-        self.lineLabel.backgroundColor = UIColor.red
+        self.lineLabel.backgroundColor = .primaryRedColor()
     }
     
     private func unHighlightLineLabel()  {
