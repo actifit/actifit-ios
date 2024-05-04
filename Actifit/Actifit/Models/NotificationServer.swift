@@ -13,8 +13,8 @@ struct NotificationKeys {
     
 }
 
-class NotificationServer: NSObject {
-    
+class NotificationServer {
+    var isSelected = false
     var category = ""
     var name = ""
     
@@ -22,6 +22,10 @@ class NotificationServer: NSObject {
         self.category = info.stringValue(forKey: NotificationKeys._category)
         self.name = info.stringValue(forKey: NotificationKeys._name)
         
+    }
+    
+    func changeSelection(selected: Bool) {
+        self.isSelected = selected
     }
 
 }
