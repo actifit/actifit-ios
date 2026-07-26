@@ -1,3 +1,11 @@
+> ⚠️ **This repository is outdated and no longer maintained.**
+>
+> Active development of the Actifit iOS app has moved to
+> **[actifit/actifit-ios-repo](https://github.com/actifit/actifit-ios-repo)**.
+> Please use that repository going forward for the latest code, to file issues, and to open pull requests.
+
+---
+
 # Actifit iOS Version
 Actifit: It Pays to be Fit!
 
